@@ -20,7 +20,7 @@
       overflow-x: hidden;
       position: relative;
     }
-    /* décor animé : bibliothèque magique */
+    /* DÉCOR MAGIQUE AMÉLIORÉ - fond visible */
     .magic-bg {
       position: fixed;
       top: 0;
@@ -29,17 +29,36 @@
       height: 100%;
       pointer-events: none;
       z-index: 0;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,215,130,0.15)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></radialGradient></defs><rect width="800" height="600" fill="none"/><circle cx="200" cy="150" r="180" fill="url(%23glow)"/><circle cx="600" cy="400" r="250" fill="url(%23glow)"/><path d="M0 500 L800 450 L800 600 L0 600 Z" fill="rgba(30,20,50,0.3)"/><text x="50" y="550" font-size="80" fill="rgba(255,230,170,0.08)" font-family="Georgia">📖</text></svg>');
-      background-repeat: no-repeat;
-      background-size: cover;
-      animation: floatBooks 20s infinite alternate;
+      background: radial-gradient(circle at 30% 20%, rgba(255,215,130,0.15), rgba(0,0,0,0.4));
+      overflow: hidden;
     }
-    @keyframes floatBooks {
-      0% { transform: translateY(0px) scale(1); opacity: 0.6; }
-      100% { transform: translateY(-20px) scale(1.05); opacity: 0.9; }
+    /* livres flottants */
+    .floating-book {
+      position: absolute;
+      font-size: 2.5rem;
+      opacity: 0.2;
+      animation: floatBook 15s infinite alternate;
+      pointer-events: none;
+    }
+    @keyframes floatBook {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-40px) rotate(5deg); }
+    }
+    /* lumières dorées */
+    .light-spot {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255,220,150,0.2), transparent);
+      border-radius: 50%;
+      width: 300px;
+      height: 300px;
+      animation: pulseLight 8s infinite alternate;
+    }
+    @keyframes pulseLight {
+      0% { opacity: 0.2; transform: scale(1); }
+      100% { opacity: 0.6; transform: scale(1.2); }
     }
     .glass-panel {
-      background: rgba(20, 25, 55, 0.45);
+      background: rgba(20, 25, 55, 0.5);
       backdrop-filter: blur(12px);
       border-radius: 2rem;
       border: 1px solid rgba(255, 230, 170, 0.3);
@@ -237,9 +256,9 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
-      font-size: 3rem;
+      font-size: 2.5rem;
       font-weight: bold;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       padding: 1rem 2rem;
       border-radius: 3rem;
       color: #FFD966;
@@ -247,13 +266,13 @@
       z-index: 1000;
       animation: zoomFade 0.8s forwards;
       pointer-events: none;
+      text-align: center;
     }
     @keyframes zoomFade {
       0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-      30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      30% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; visibility: hidden; }
     }
-    /* toggle musique */
     .music-btn {
       position: fixed;
       bottom: 1rem;
@@ -269,15 +288,22 @@
       .sentence { font-size: 0.9rem; }
       .bubble { font-size: 0.7rem; padding: 0.3rem 0.7rem; white-space: normal; }
       .game-canvas { min-height: 320px; }
-      .zoom-transition { font-size: 1.8rem; white-space: normal; width: 80%; text-align: center; }
+      .zoom-transition { font-size: 1.5rem; white-space: normal; width: 80%; }
     }
   </style>
 </head>
 <body>
-<div class="magic-bg"></div>
+<div class="magic-bg">
+  <div class="light-spot" style="top:10%; left:5%;"></div>
+  <div class="light-spot" style="bottom:10%; right:5%; width:400px; height:400px;"></div>
+  <div class="floating-book" style="top:15%; left:80%;">📖</div>
+  <div class="floating-book" style="top:60%; left:10%; animation-duration: 20s;">📚</div>
+  <div class="floating-book" style="top:30%; left:40%; animation-duration: 18s;">🔮</div>
+  <div class="floating-book" style="bottom:20%; left:70%;">✨</div>
+</div>
 <main class="main-container">
   <header class="hud glass-panel">
-    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Lexic Rush - Points bonus pour les mots rares !</p></div>
+    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Lexic Rush - Attention : mauvais mot = -5 points</p></div>
     <div class="hud-right">
       <div class="stat">⭐ Niv <span id="level">1</span></div>
       <div class="stat">✨ XP <span id="xp">0</span></div>
@@ -292,7 +318,7 @@
     <div class="game-card" data-game="lexicrush_evolved">
       <h2>🔫 LEXIC RUSH ÉVOLUÉ</h2>
       <p>Phrases, consignes variées, 10 manches</p>
-      <span class="badge-game" style="background:#C49A6C;">+ Points rares</span>
+      <span class="badge-game" style="background:#C49A6C;">+ Points rares / -5 si erreur</span>
     </div>
     <div class="game-card" style="opacity:0.5;">
       <h2>📜 Autres jeux</h2>
@@ -309,7 +335,7 @@
 
 <script>
   // --------------------------------------------------------------
-  // 1. STORAGE (XP, niveau, pièces...)
+  // 1. STORAGE
   // --------------------------------------------------------------
   const STORAGE_KEYS = { XP:'archives_xp', LEVEL:'archives_level', COMBO:'archives_combo', STREAK:'archives_streak', COINS:'archives_coins' };
   const Storage = {
@@ -343,7 +369,7 @@
   function showGameContainer(show){ document.getElementById('gameContainer').classList.toggle('hidden',!show); }
 
   // --------------------------------------------------------------
-  // 2. AUDIO (Web Audio - musique dynamique et bruitages)
+  // 2. AUDIO (musique douce + bruitages, pas de bip pour changement consigne)
   // --------------------------------------------------------------
   let audioCtx = null;
   let musicGain = null;
@@ -354,7 +380,7 @@
     if (audioCtx) return;
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     musicGain = audioCtx.createGain();
-    musicGain.gain.value = 0.3;
+    musicGain.gain.value = 0.25;
     musicGain.connect(audioCtx.destination);
   }
 
@@ -369,15 +395,15 @@
     switch(type) {
       case 'success':
         osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.4);
         osc.start();
         osc.stop(now+0.3);
         break;
       case 'fail':
         osc.frequency.value = 440;
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.6);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
         osc.start();
         osc.stop(now+0.4);
         break;
@@ -387,10 +413,10 @@
         osc2.connect(gain2);
         gain2.connect(audioCtx.destination);
         osc2.frequency.value = 660;
-        gain2.gain.setValueAtTime(0.25, now);
-        gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.8);
+        gain2.gain.setValueAtTime(0.2, now);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.7);
         osc2.start();
-        osc2.stop(now+0.7);
+        osc2.stop(now+0.6);
         setTimeout(()=>{ const o=audioCtx.createOscillator(); o.connect(audioCtx.destination); o.frequency.value=880; o.start(); o.stop(now+0.9); }, 400);
         break;
       case 'victory':
@@ -399,7 +425,7 @@
             const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
             o.connect(g); g.connect(audioCtx.destination);
             o.frequency.value=523+ i*200;
-            g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.15, audioCtx.currentTime);
             g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.5);
             o.start(); o.stop(audioCtx.currentTime+0.4);
           }, i*200);
@@ -413,7 +439,7 @@
     if (musicInterval) clearInterval(musicInterval);
     if (!audioCtx) initAudio();
     if (!audioCtx) return;
-    // Petite mélodie classique rythmée (style Vivaldi / baroque)
+    // mélodie douce et discrète (pas de bip aigu)
     const notes = [523, 587, 659, 523, 440, 493, 523, 587, 659, 698, 784, 659, 587, 523];
     let idx = 0;
     function playNote() {
@@ -424,13 +450,13 @@
       osc.connect(gainNode);
       gainNode.connect(musicGain);
       osc.frequency.value = notes[idx % notes.length];
-      gainNode.gain.setValueAtTime(0.08, now);
+      gainNode.gain.setValueAtTime(0.06, now);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now+0.35);
       osc.start();
       osc.stop(now+0.3);
       idx++;
     }
-    musicInterval = setInterval(playNote, 380);
+    musicInterval = setInterval(playNote, 450);
   }
 
   function stopBackgroundMusic() {
@@ -451,11 +477,10 @@
   }
 
   // --------------------------------------------------------------
-  // 3. BASE DE DONNÉES (avec points variables)
-  //    plus le mot est rare, plus il rapporte de points
+  // 3. BASE DE DONNÉES (points variables)
   // --------------------------------------------------------------
   const questionBank = [
-    { sentence: "Il court très rapidement.", highlight: "rapidement", type: "synonymes", corrects: ["vite","vivement"], wrongs: ["lentement","doucement"], rareBonus: [0,5] }, // "vivement" +5pts
+    { sentence: "Il court très rapidement.", highlight: "rapidement", type: "synonymes", corrects: ["vite","vivement"], wrongs: ["lentement","doucement"], rareBonus: [0,5] },
     { sentence: "Elle est vraiment contente aujourd'hui.", highlight: "contente", type: "synonymes", corrects: ["heureuse","satisfaite","ravie"], wrongs: ["triste","fâchée"], rareBonus: [0,0,8] },
     { sentence: "Ce garçon est très beau.", highlight: "beau", type: "synonymes", corrects: ["magnifique","splendide","joli"], wrongs: ["laid","moche"], rareBonus: [5,8,0] },
     { sentence: "Il a un petit chien.", highlight: "petit", type: "synonymes", corrects: ["minuscule","miniature","menu"], wrongs: ["grand","énorme"], rareBonus: [5,6,10] },
@@ -467,18 +492,14 @@
     { sentence: "Cet exercice est facile.", highlight: "facile", type: "synonymes", corrects: ["simple","aisé","élémentaire"], wrongs: ["difficile","compliqué"], rareBonus: [0,6,10] },
     { sentence: "Il a un air triste.", highlight: "triste", type: "synonymes", corrects: ["morose","désolé","affligé"], wrongs: ["joyeux","heureux"], rareBonus: [8,6,12] },
     { sentence: "Cette histoire est étrange.", highlight: "étrange", type: "synonymes", corrects: ["bizarre","curieux","inexpliqué"], wrongs: ["normal","commun"], rareBonus: [6,8,15] },
-    // Antonymes
     { sentence: "Il n'est jamais en retard.", highlight: "retard", type: "antonymes", corrects: ["avance","ponctualité"], wrongs: ["lenteur","absence"], rareBonus: [5,10] },
     { sentence: "La pièce est sombre.", highlight: "sombre", type: "antonymes", corrects: ["clair","lumineux","éclatant"], wrongs: ["obscur","noir"], rareBonus: [4,8,12] },
     { sentence: "Il a perdu ses clés.", highlight: "perdu", type: "antonymes", corrects: ["trouvé","retrouvé"], wrongs: ["égaré","caché"], rareBonus: [7,10] },
-    // Famille
     { sentence: "Il aime la nature.", highlight: "nature", type: "famille", corrects: ["naturel","naturaliste","naturellement"], wrongs: ["artificiel","culture"], rareBonus: [5,12,10] },
     { sentence: "Elle pratique la natation.", highlight: "natation", type: "famille", corrects: ["nager","nageur","nageoire"], wrongs: ["courir","sauter"], rareBonus: [4,7,12] },
-    // Champ lexical
     { sentence: "La forêt est profonde.", highlight: "forêt", type: "champ lexical", corrects: ["arbre","feuille","branche","sous-bois"], wrongs: ["océan","désert"], rareBonus: [0,6,8,12] },
     { sentence: "Le pirate cherche un trésor.", highlight: "pirate", type: "champ lexical", corrects: ["bateau","épée","carte","île"], wrongs: ["avion","voiture"], rareBonus: [5,7,9,10] },
   ];
-  // Ajout de mots courants
   const common = [
     { sentence: "Il est très gentil.", highlight: "gentil", type: "synonymes", corrects: ["aimable","sympathique","bienveillant"], wrongs: ["méchant","désagréable"], rareBonus: [0,4,10] },
     { sentence: "Elle a une belle maison.", highlight: "belle", type: "synonymes", corrects: ["magnifique","superbe","splendide"], wrongs: ["laide","moche"], rareBonus: [5,7,10] },
@@ -487,18 +508,17 @@
     { sentence: "Il a une voiture rapide.", highlight: "rapide", type: "synonymes", corrects: ["véloce","vif","prompt"], wrongs: ["lent","paresseux"], rareBonus: [5,7,9] },
   ];
   const FINAL_BANK = [...questionBank, ...common];
-  // Duplication pour atteindre ~50
   while(FINAL_BANK.length < 50) FINAL_BANK.push({...FINAL_BANK[Math.floor(Math.random()*FINAL_BANK.length)]});
 
   // --------------------------------------------------------------
-  // 4. JEU PRINCIPAL
+  // 4. JEU PRINCIPAL (avec pénalité de points)
   // --------------------------------------------------------------
   const LexicRushEvolved = {
     gameActive: false,
     currentRoundIndex: 0,
     rounds: [],
     roundData: null,
-    remainingCorrects: [], // objets {word, bonusPoints}
+    remainingCorrects: [],
     score: 0,
     combo: 0,
     timeLeft: 25,
@@ -548,7 +568,7 @@
           <div class="timer-bar" id="timerBar" style="width:100%"></div>
           <div id="gameCanvas" class="game-canvas" style="height:400px; position:relative;"></div>
           <div class="progress">✅ Bonnes réponses restantes : <span id="remainingCount">0</span></div>
-          <button id="skipRoundBtn">⏩ Passer manche (pénalité)</button>
+          <button id="skipRoundBtn">⏩ Passer manche (pénalité -5 pts)</button>
         </div>
       `;
       this.canvasElem = document.getElementById('gameCanvas');
@@ -581,7 +601,6 @@
       document.getElementById('gameScore').innerText = this.score;
       document.getElementById('gameCombo').innerText = this.combo;
 
-      // Stocker les corrects avec leurs bonus
       this.remainingCorrects = corrects.map((word, idx) => ({
         word: word,
         bonus: (rareBonus && rareBonus[idx]) ? rareBonus[idx] : 0
@@ -590,7 +609,7 @@
       this.timeLeft = 25;
       this.updateTimerUI();
 
-      // Effet zoom sur le changement de consigne
+      // Affichage zoom sans son
       this.showZoomText(instructionText);
 
       this.timerInterval = setInterval(() => {
@@ -693,16 +712,20 @@
             return;
           }
         } else {
+          // déjà trouvé : pénalité
           this.combo = 0;
-          this.addFeedback(bubbleElem, 'Déjà trouvé !', '#FFA500');
+          this.score = Math.max(0, this.score - 5);
+          this.addFeedback(bubbleElem, '-5 (déjà pris)', '#FFA500');
           playSound('fail');
           if (this.onReward) this.onReward(0,0,true);
           refreshHUD();
           this.updateUIStats();
         }
       } else {
+        // Mauvaise réponse : pénalité -5 points
         this.combo = 0;
-        this.addFeedback(bubbleElem, 'Mauvais !', '#E57373');
+        this.score = Math.max(0, this.score - 5);
+        this.addFeedback(bubbleElem, '-5 points', '#E57373');
         playSound('fail');
         if (this.onReward) this.onReward(0,0,true);
         refreshHUD();
@@ -862,7 +885,7 @@
       const style = document.createElement('style');
       style.textContent = `@keyframes fadeUp { 0% { opacity:1; transform: translateY(0); } 100% { opacity:0; transform: translateY(-40px); } }`;
       document.head.appendChild(style);
-      // Initialiser l'audio au premier clic utilisateur (règle navigateur)
+      // Audio au premier clic
       document.body.addEventListener('click', () => {
         if (!audioCtx) {
           initAudio();

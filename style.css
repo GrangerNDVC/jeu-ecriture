@@ -1,0 +1,243 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none; /* plus premium pour glisser */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at 10% 20%, #0a0f2a, #030617);
+  min-height: 100vh;
+  color: #f5e9d3;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* poussière magique */
+.magic-dust {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 20% 40%, rgba(255,215,130,0.2) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: floatDust 30s linear infinite;
+}
+@keyframes floatDust {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 100px; }
+}
+
+.glass-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.main-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* verre dépoli premium */
+.glass-panel {
+  background: rgba(20, 25, 55, 0.45);
+  backdrop-filter: blur(12px);
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 230, 170, 0.3);
+  box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4);
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+.hud-left .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFE6A3, #C7A46B);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.subtitle {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+.hud-right {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.stat {
+  background: rgba(0,0,0,0.45);
+  padding: 0.3rem 1rem;
+  border-radius: 3rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  backdrop-filter: blur(4px);
+}
+.icon {
+  margin-right: 0.3rem;
+}
+
+.xp-bar-container {
+  background: rgba(0,0,0,0.5);
+  border-radius: 2rem;
+  height: 0.6rem;
+  margin: 1rem 0 2rem;
+  overflow: hidden;
+}
+.xp-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #F3B33D, #FFD966);
+  border-radius: 2rem;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px #FFD966;
+}
+
+/* grille cartes */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+}
+.game-card {
+  background: rgba(30, 35, 70, 0.5);
+  backdrop-filter: blur(16px);
+  border-radius: 2rem;
+  padding: 1.8rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(255,220,150,0.4);
+  position: relative;
+  overflow: hidden;
+}
+.game-card:hover {
+  transform: translateY(-8px);
+  border-color: #FFD966;
+  box-shadow: 0 0 20px rgba(255,217,102,0.4);
+}
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,235,170,0.2), transparent);
+  transition: left 0.6s;
+}
+.game-card:hover .card-glow {
+  left: 100%;
+}
+.badge-game {
+  display: inline-block;
+  background: #C49A6C;
+  margin-top: 0.8rem;
+  padding: 0.2rem 1rem;
+  border-radius: 3rem;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #1E1B2F;
+}
+
+/* game container */
+.game-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s;
+}
+.hidden {
+  display: none;
+}
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: #FFE6A3;
+  padding: 0.3rem 1rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.close-btn:hover {
+  background: #b35900;
+}
+
+/* zone de jeu (Lexic Rush) */
+.quiz-area {
+  text-align: center;
+  padding: 1rem;
+}
+.question-word {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 1rem 0;
+  text-shadow: 0 0 8px #FFD966;
+}
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.option-btn {
+  background: rgba(20,30,60,0.8);
+  border: 1px solid #BFA87A;
+  padding: 0.8rem 1.5rem;
+  border-radius: 3rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #FAF0D7;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.option-btn:hover:not(:disabled) {
+  background: #F0B27A;
+  color: #0E0B1A;
+  transform: scale(1.02);
+}
+.feedback {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.next-btn {
+  background: #D4AF37;
+  border: none;
+  padding: 0.7rem 2rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .hud { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .question-word { font-size: 2rem; }
+  .option-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+  .games-grid { gap: 1rem; }
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Les Archives des Mots</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <script defer src="storage.js"></script>
+  <script defer src="ui.js"></script>
+  <script defer src="games.js"></script>
+  <script defer src="engine.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="magic-dust"></div>
+  <div class="glass-overlay"></div>
+
+  <main id="app" class="main-container">
+    <!-- HEADER avec HUD -->
+    <header class="hud glass-panel">
+      <div class="hud-left">
+        <h1 class="logo">📖 LES ARCHIVES DES MOTS</h1>
+        <p class="subtitle">Chaque texte cache un pouvoir.</p>
+      </div>
+      <div class="hud-right">
+        <div class="stat"><span class="icon">⭐</span> Niveau <span id="level">1</span></div>
+        <div class="stat"><span class="icon">✨</span> XP <span id="xp">0</span></div>
+        <div class="stat"><span class="icon">🔥</span> Combo <span id="combo">0</span></div>
+        <div class="stat"><span class="icon">⚡</span> Série <span id="streak">0</span></div>
+        <div class="stat"><span class="icon">🪙</span> Pièces <span id="coins">0</span></div>
+      </div>
+    </header>
+
+    <!-- Barre de progression XP -->
+    <div class="xp-bar-container">
+      <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+    </div>
+
+    <!-- Grille des 6 cartes (jeux) -->
+    <section class="games-grid" id="gamesGrid">
+      <div class="game-card" data-game="lexicrush">
+        <div class="card-glow"></div>
+        <h2>🌲 Forêt Lexicale</h2>
+        <p>Synonymes / Antonymes</p>
+        <span class="badge-game">Lexic Rush</span>
+      </div>
+      <div class="game-card" data-game="syntax">
+        <div class="card-glow"></div>
+        <h2>📜 Bibliothèque Syntaxique</h2>
+        <p>Réparation de phrases</p>
+      </div>
+      <div class="game-card" data-game="ponctuation">
+        <div class="card-glow"></div>
+        <h2>🏛️ Temple de la Ponctuation</h2>
+        <p>Virgules, points, exclamations</p>
+      </div>
+      <div class="game-card" data-game="connecteurs">
+        <div class="card-glow"></div>
+        <h2>🗼 Tour des Connecteurs</h2>
+        <p>Logique & liaisons</p>
+      </div>
+      <div class="game-card" data-game="style">
+        <div class="card-glow"></div>
+        <h2>🖼️ Galerie du Style</h2>
+        <p>Figures de style</p>
+      </div>
+      <div class="game-card" data-game="temps">
+        <div class="card-glow"></div>
+        <h2>⏳ Atelier des Temps</h2>
+        <p>Conjugaison & réécriture</p>
+      </div>
+    </section>
+
+    <!-- Conteneur dynamique du mini‑jeu -->
+    <div id="gameContainer" class="game-container hidden glass-panel">
+      <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
+      <div id="gameInterface"></div>
+    </div>
+  </main>
+
+  <script>
+    // simple sécurité pour forcer l'affichage après chargement
+    window.addEventListener('load', () => {
+      if (window.App) window.App.init();
+    });
+  </script>
+</body>
+</html>

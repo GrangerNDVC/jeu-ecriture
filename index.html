@@ -400,13 +400,6 @@
         osc.start();
         osc.stop(now+0.3);
         break;
-      case 'fail':
-        osc.frequency.value = 440;
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
-        osc.start();
-        osc.stop(now+0.4);
-        break;
       case 'roundwin':
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
@@ -511,7 +504,7 @@
   while(FINAL_BANK.length < 50) FINAL_BANK.push({...FINAL_BANK[Math.floor(Math.random()*FINAL_BANK.length)]});
 
   // --------------------------------------------------------------
-  // 4. JEU PRINCIPAL (avec pénalité de points)
+  // 4. JEU PRINCIPAL (avec pénalité de points, sans bip)
   // --------------------------------------------------------------
   const LexicRushEvolved = {
     gameActive: false,
@@ -716,7 +709,7 @@
           this.combo = 0;
           this.score = Math.max(0, this.score - 5);
           this.addFeedback(bubbleElem, '-5 (déjà pris)', '#FFA500');
-          playSound('fail');
+          // PAS DE BIP
           if (this.onReward) this.onReward(0,0,true);
           refreshHUD();
           this.updateUIStats();
@@ -726,7 +719,7 @@
         this.combo = 0;
         this.score = Math.max(0, this.score - 5);
         this.addFeedback(bubbleElem, '-5 points', '#E57373');
-        playSound('fail');
+        // PAS DE BIP
         if (this.onReward) this.onReward(0,0,true);
         refreshHUD();
         this.updateUIStats();
@@ -753,7 +746,7 @@
     roundFailure() {
       if (!this.gameActive) return;
       this.addGlobalFeedback("Temps écoulé ! Manche perdue...", '#E57373');
-      playSound('fail');
+      // PAS DE BIP
       if (this.onReward) this.onReward(0, 0, true);
       refreshHUD();
       this.nextRound();
@@ -765,7 +758,7 @@
       this.score = Math.max(0, this.score - 5);
       this.combo = 0;
       this.updateUIStats();
-      playSound('fail');
+      // PAS DE BIP
       if (this.onReward) this.onReward(0,0,true);
       refreshHUD();
       this.nextRound();

@@ -5,41 +5,265 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Archives des Mots - Lexic Rush</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; color: #f5e9d3; overflow-x: hidden; background: #0a0f2a; }
-    #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-    .glass-panel { background: rgba(20, 25, 55, 0.5); backdrop-filter: blur(12px); border-radius: 2rem; border: 1px solid rgba(255, 230, 170, 0.3); box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4); }
-    .main-container { max-width: 1100px; margin: 0 auto; padding: 1rem; position: relative; z-index: 2; }
-    .hud { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 0.8rem 1.5rem; margin-bottom: 1rem; }
-    .logo { font-size: 1.3rem; font-weight: 700; background: linear-gradient(135deg, #FFE6A3, #C7A46B); background-clip: text; -webkit-background-clip: text; color: transparent; }
-    .subtitle { font-size: 0.7rem; opacity: 0.8; }
-    .hud-right { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .stat { background: rgba(0,0,0,0.5); padding: 0.2rem 0.8rem; border-radius: 2rem; font-weight: 600; font-size: 0.8rem; }
-    .xp-bar-container { background: rgba(0,0,0,0.5); border-radius: 2rem; height: 0.5rem; margin: 0.5rem 0 1rem; overflow: hidden; }
-    .xp-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #F3B33D, #FFD966); transition: width 0.4s; }
-    .game-card { background: rgba(30, 35, 70, 0.6); backdrop-filter: blur(16px); border-radius: 1.5rem; padding: 1.2rem; text-align: center; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,220,150,0.4); width: 260px; margin: 1rem auto; }
-    .game-card:hover { transform: scale(1.02); border-color: #FFD966; }
-    .accordion { background: rgba(0,0,0,0.5); border-radius: 1.5rem; margin: 1rem 0; overflow: hidden; }
-    .accordion-header { background: rgba(0,0,0,0.6); padding: 0.8rem; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; }
-    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 1rem; background: rgba(0,0,0,0.4); }
-    .accordion-content.show { max-height: 350px; padding: 1rem; }
-    .game-container { margin-top: 1rem; padding: 1rem; position: relative; }
-    .hidden { display: none; }
-    .close-btn { position: absolute; top: 0.8rem; right: 1rem; background: rgba(0,0,0,0.7); border: none; color: #FFE6A3; padding: 0.2rem 1rem; border-radius: 2rem; cursor: pointer; z-index: 20; }
-    .game-area { text-align: center; }
-    .context { background: rgba(0,0,0,0.5); border-radius: 1.5rem; padding: 0.8rem; margin-bottom: 1rem; }
-    .sentence { font-size: 1.2rem; font-style: italic; margin-bottom: 0.5rem; }
-    .target-word { display: inline-block; background: #FFD966; color: #1E1B2F; padding: 0.2rem 1rem; border-radius: 2rem; font-weight: bold; margin: 0.3rem; }
-    .instruction { font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); display: inline-block; padding: 0.2rem 1rem; border-radius: 2rem; }
-    .game-stats { display: flex; justify-content: center; gap: 1.5rem; margin: 0.5rem 0; font-size: 1rem; }
-    .game-canvas { position: relative; background: rgba(0, 0, 0, 0.3); border-radius: 2rem; min-height: 400px; overflow: hidden; margin: 0.5rem 0; border: 2px solid rgba(255,215,0,0.5); cursor: crosshair; }
-    .bubble { position: absolute; background: radial-gradient(circle at 30% 30%, rgba(255,230,150,0.95), rgba(200,160,80,0.85)); backdrop-filter: blur(4px); border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; padding: 0.5rem 1rem; color: #1E1B2F; font-size: 0.9rem; box-shadow: 0 0 12px rgba(0,0,0,0.3); cursor: pointer; border: 1px solid #FFD966; white-space: nowrap; }
-    .timer-bar { height: 8px; background: #FFD966; width: 100%; border-radius: 4px; transition: width 0.1s linear; margin-top: 0.5rem; }
-    button { background: #D4AF37; border: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: bold; margin: 0.5rem; cursor: pointer; }
-    .zoom-transition { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 2rem; font-weight: bold; background: rgba(0,0,0,0.85); padding: 1rem 2rem; border-radius: 3rem; color: #FFD966; white-space: nowrap; z-index: 1000; animation: zoomFade 0.8s forwards; pointer-events: none; }
-    @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; visibility: hidden; } }
-    .music-btn { position: fixed; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.6); border-radius: 2rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; z-index: 100; cursor: pointer; }
-    @media (max-width: 700px) { .sentence { font-size: 0.9rem; } .bubble { font-size: 0.7rem; padding: 0.3rem 0.7rem; white-space: normal; } .game-canvas { min-height: 320px; } .zoom-transition { font-size: 1.2rem; white-space: normal; width: 80%; } }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      color: #f5e9d3;
+      overflow-x: hidden;
+      background: #0a0f2a;
+    }
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .glass-panel {
+      background: rgba(20, 25, 55, 0.5);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 230, 170, 0.3);
+      box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4);
+    }
+    .main-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 0.8rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #FFE6A3, #C7A46B);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .subtitle {
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+    .hud-right {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: rgba(0,0,0,0.5);
+      padding: 0.2rem 0.8rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .xp-bar-container {
+      background: rgba(0,0,0,0.5);
+      border-radius: 2rem;
+      height: 0.5rem;
+      margin: 0.5rem 0 1rem;
+      overflow: hidden;
+    }
+    .xp-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #F3B33D, #FFD966);
+      transition: width 0.4s;
+    }
+    .game-card {
+      background: rgba(30, 35, 70, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      border: 1px solid rgba(255,220,150,0.5);
+      width: 260px;
+      margin: 1rem auto;
+    }
+    .game-card:hover {
+      transform: scale(1.02);
+      border-color: #FFD966;
+    }
+    .rules-link {
+      text-align: center;
+      margin: 0.5rem auto 1rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      opacity: 0.7;
+      width: fit-content;
+    }
+    .rules-text {
+      background: rgba(0,0,0,0.5);
+      border-radius: 1rem;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem auto;
+      max-width: 90%;
+      font-size: 0.8rem;
+      display: none;
+    }
+    .rules-text.show {
+      display: block;
+    }
+    .game-container {
+      margin-top: 1rem;
+      padding: 1rem;
+      position: relative;
+    }
+    .hidden {
+      display: none;
+    }
+    .close-btn {
+      position: absolute;
+      top: 0.8rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      color: #FFE6A3;
+      padding: 0.2rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      z-index: 20;
+    }
+    .game-area {
+      text-align: center;
+    }
+    .context {
+      background: rgba(0,0,0,0.5);
+      border-radius: 1.5rem;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    .sentence {
+      font-size: 1.2rem;
+      font-style: italic;
+      margin-bottom: 0.5rem;
+    }
+    .target-word {
+      display: inline-block;
+      background: #FFD966;
+      color: #1E1B2F;
+      padding: 0.2rem 1rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      margin: 0.3rem;
+    }
+    .instruction {
+      font-size: 1rem;
+      font-weight: bold;
+      background: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 0.2rem 1rem;
+      border-radius: 2rem;
+    }
+    .game-stats {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+    .game-canvas {
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 2rem;
+      min-height: 400px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+      border: 2px solid rgba(255,215,0,0.5);
+      cursor: crosshair;
+    }
+    .bubble {
+      position: absolute;
+      background: radial-gradient(circle at 30% 30%, rgba(255,230,150,0.95), rgba(200,160,80,0.85));
+      backdrop-filter: blur(4px);
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      color: #1E1B2F;
+      font-size: 0.9rem;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      border: 1px solid #FFD966;
+      white-space: nowrap;
+    }
+    .timer-bar {
+      height: 8px;
+      background: #FFD966;
+      width: 100%;
+      border-radius: 4px;
+      transition: width 0.1s linear;
+      margin-top: 0.5rem;
+    }
+    button {
+      background: #D4AF37;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+    .zoom-transition {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 2rem;
+      font-weight: bold;
+      background: rgba(0,0,0,0.85);
+      padding: 1rem 2rem;
+      border-radius: 3rem;
+      color: #FFD966;
+      white-space: nowrap;
+      z-index: 1000;
+      animation: zoomFade 0.8s forwards;
+      pointer-events: none;
+    }
+    @keyframes zoomFade {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      30% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; visibility: hidden; }
+    }
+    .music-btn {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.6);
+      border-radius: 2rem;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+      z-index: 100;
+      cursor: pointer;
+    }
+    @media (max-width: 700px) {
+      .sentence { font-size: 0.9rem; }
+      .bubble { font-size: 0.7rem; padding: 0.3rem 0.7rem; white-space: normal; }
+      .game-canvas { min-height: 320px; }
+      .zoom-transition { font-size: 1.2rem; white-space: normal; width: 80%; }
+    }
   </style>
 </head>
 <body>
@@ -63,19 +287,11 @@
     <span style="background:#C49A6C; padding:0.2rem 1rem; border-radius:2rem;">+ Points rares / -5 si erreur</span>
   </div>
 
-  <div class="accordion glass-panel">
-    <div class="accordion-header" id="accordionHeader">📖 Comment jouer ? ▼</div>
-    <div class="accordion-content" id="accordionContent">
-      <p>🔹 <strong>Objectif</strong> : Trouvez tous les mots demandés (synonymes, antonymes, famille, champ lexical) avant la fin du temps.</p>
-      <p>🔹 <strong>Règles</strong> :<br>
-      - Une phrase et un mot clé s’affichent.<br>
-      - Des bulles montent. Cliquez sur celles qui correspondent à la consigne.<br>
-      - Chaque bonne réponse rapporte des points (les mots rares donnent un bonus).<br>
-      - Une mauvaise réponse ou un mot déjà trouvé vous fait <strong>perdre 5 points</strong> et remet votre combo à zéro.<br>
-      - Plus votre score total augmente, plus le jeu s’accélère (bulles plus rapides et plus fréquentes).<br>
-      - Terminez les 10 manches pour gagner un gros bonus !</p>
-      <p>🔹 <strong>Conseil</strong> : Enchaînez les bonnes réponses pour augmenter votre combo et décupler vos points !</p>
-    </div>
+  <div class="rules-link" id="rulesLink">📜 Règles du jeu</div>
+  <div class="rules-text glass-panel" id="rulesText">
+    🔹 <strong>Objectif</strong> : trouvez tous les mots demandés (synonymes, antonymes, famille, champ lexical) avant la fin du temps.<br>
+    🔹 <strong>Règles</strong> : chaque bonne réponse rapporte des points (bonus pour mots rares). Mauvaise réponse = -5 points et combo à zéro. Plus votre score augmente, plus le jeu s’accélère.<br>
+    🔹 <strong>10 manches</strong> : terminez-les pour un gros bonus !
   </div>
 
   <div id="gameContainer" class="game-container hidden glass-panel">
@@ -118,7 +334,7 @@
   }
   function showGameContainer(show){ document.getElementById('gameContainer').classList.toggle('hidden',!show); }
 
-  // ---------- DÉCOR CANVAS (étoiles) ----------
+  // ---------- DÉCOR ÉTOILÉ ----------
   const canvas = document.getElementById('bg-canvas');
   const ctx = canvas.getContext('2d');
   let stars = [];
@@ -153,43 +369,110 @@
   resizeCanvas();
   drawStars();
 
-  // ---------- AUDIO (musique douce + bruitages) ----------
+  // ---------- AUDIO : musique douce + sons magiques / cloche ----------
   let audioCtx = null, musicGain = null, musicInterval = null, musicEnabled = true;
-  function initAudio() { if(!audioCtx) { audioCtx = new (window.AudioContext||window.webkitAudioContext)(); musicGain = audioCtx.createGain(); musicGain.gain.value = 0.1; musicGain.connect(audioCtx.destination); } }
+  function initAudio() {
+    if(!audioCtx) {
+      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      musicGain = audioCtx.createGain();
+      musicGain.gain.value = 0.08;
+      musicGain.connect(audioCtx.destination);
+    }
+  }
   function playSound(type) {
     if(!audioCtx) initAudio();
     if(!audioCtx) return;
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    switch(type) {
-      case 'success':
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
-        osc.start(); osc.stop(now+0.25);
-        break;
-      case 'fail':
-        osc.frequency.value = 440;
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.4);
-        osc.start(); osc.stop(now+0.3);
-        break;
-      case 'roundwin':
+    if(type === 'magic') {
+      // son de magie (arpège doux)
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.value = 523;
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+0.6);
+      osc.start();
+      osc.stop(now+0.5);
+      setTimeout(()=>{
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
-        osc2.connect(gain2); gain2.connect(audioCtx.destination);
-        osc2.frequency.value = 660;
-        gain2.gain.setValueAtTime(0.15, now);
-        gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.6);
-        osc2.start(); osc2.stop(now+0.5);
-        setTimeout(()=>{ const o=audioCtx.createOscillator(); o.connect(audioCtx.destination); o.frequency.value=880; o.start(); o.stop(now+0.8); }, 400);
-        break;
-      case 'victory':
-        for(let i=0;i<3;i++) setTimeout(()=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=523+i*200; g.gain.setValueAtTime(0.12, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.4); o.start(); o.stop(audioCtx.currentTime+0.3); }, i*200);
-        break;
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.frequency.value = 659;
+        gain2.gain.setValueAtTime(0.08, now+0.3);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.8);
+        osc2.start();
+        osc2.stop(now+0.7);
+      }, 250);
+    } else if(type === 'bell') {
+      // tintement de cloche
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+1.0);
+      osc.start();
+      osc.stop(now+0.8);
+      // petite harmonique
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.frequency.value = 1100;
+      gain2.gain.setValueAtTime(0.04, now+0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.7);
+      osc2.start();
+      osc2.stop(now+0.6);
+    } else if(type === 'success') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
+      osc.start(); osc.stop(now+0.25);
+    } else if(type === 'fail') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.value = 440;
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+0.4);
+      osc.start(); osc.stop(now+0.3);
+    } else if(type === 'roundwin') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.value = 660;
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
+      osc.start(); osc.stop(now+0.4);
+      setTimeout(()=>{
+        const o=audioCtx.createOscillator();
+        const g=audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value=880;
+        g.gain.setValueAtTime(0.1, now+0.3);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+0.7);
+        o.start(); o.stop(now+0.6);
+      }, 300);
+    } else if(type === 'victory') {
+      for(let i=0;i<3;i++) setTimeout(()=>{
+        const o=audioCtx.createOscillator();
+        const g=audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value=523+i*200;
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.4);
+        o.start(); o.stop(audioCtx.currentTime+0.3);
+      }, i*200);
     }
   }
   function playAmbient() {
@@ -200,8 +483,8 @@
     osc.connect(gain);
     gain.connect(musicGain);
     osc.type = 'sine';
-    osc.frequency.value = 80 + Math.sin(now)*8;
-    gain.gain.setValueAtTime(0.04, now);
+    osc.frequency.value = 80 + Math.sin(now)*5;
+    gain.gain.setValueAtTime(0.03, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now+3.5);
     osc.start();
     osc.stop(now+3);
@@ -216,7 +499,7 @@
   function stopBackgroundMusic() { if(musicInterval) clearInterval(musicInterval); musicInterval=null; }
   function toggleMusic() { musicEnabled=!musicEnabled; const btn=document.getElementById('musicToggle'); if(musicEnabled) { startBackgroundMusic(); btn.innerHTML="🎵 Musique ON"; } else { stopBackgroundMusic(); btn.innerHTML="🔇 Musique OFF"; } }
 
-  // ---------- BASE DE DONNÉES (riche) ----------
+  // ---------- BASE DE DONNÉES (variée) ----------
   const questionBank = [
     { sentence:"Il court très rapidement.", highlight:"rapidement", type:"synonymes", corrects:["vite","vivement"], wrongs:["lentement","doucement"], rareBonus:[0,5] },
     { sentence:"Elle est vraiment contente.", highlight:"contente", type:"synonymes", corrects:["heureuse","satisfaite","ravie"], wrongs:["triste","fâchée"], rareBonus:[0,0,8] },
@@ -241,7 +524,7 @@
   ];
   while(questionBank.length < 50) questionBank.push({...questionBank[Math.floor(Math.random()*questionBank.length)]});
 
-  // ---------- JEU AVEC ACCÉLÉRATION, SONS, ZOOM ----------
+  // ---------- JEU AVEC ACCÉLÉRATION, SONS, ZOOM MAGIQUE ----------
   const LexicRush = {
     gameActive: false, currentRoundIndex:0, rounds:[], roundData:null, remainingCorrects:[],
     score:0, combo:0, timeLeft:25, bubbles:[], canvasElem:null, gameLoop:null,
@@ -287,10 +570,10 @@
       this.updateRemainingUI();
       this.timeLeft = 25;
       this.updateTimerUI();
-      // ZOOM sur la consigne (sans son)
+      // ZOOM + SON MAGIQUE
       this.showZoomText(instructionText);
-      this.timerInterval = setInterval(()=>{ if(this.gameActive){ this.timeLeft-=0.1; this.updateTimerUI(); if(this.timeLeft<=0) this.roundFailure(); }},100);
-      // Accélération progressive selon le score
+      playSound('magic');
+      this.timerInterval = setInterval(()=>{ if(this.gameActive){ this.timeLeft-=0.1; this.updateTimerUI(); if(this.timeLeft<=0) { this.roundFailure(); playSound('bell'); } }},100);
       let speedFactor = Math.min(2.5, 1 + Math.floor(this.score / 60) * 0.2);
       let spawnDelay = Math.max(400, this.baseSpawnDelay / speedFactor);
       this.spawnInterval = setInterval(()=>{ if(this.gameActive) this.spawnBubble(speedFactor); }, spawnDelay);
@@ -379,9 +662,9 @@
       refreshHUD();
       document.querySelector('.game-card').addEventListener('click',()=>this.startGame());
       document.getElementById('closeGameBtn').onclick = () => showGameContainer(false);
-      const header = document.getElementById('accordionHeader');
-      const content = document.getElementById('accordionContent');
-      header.onclick = () => content.classList.toggle('show');
+      const rulesLink = document.getElementById('rulesLink');
+      const rulesText = document.getElementById('rulesText');
+      rulesLink.onclick = () => rulesText.classList.toggle('show');
       document.body.addEventListener('click', () => { if(!audioCtx){ initAudio(); startBackgroundMusic(); } }, { once: true });
       document.getElementById('musicToggle').onclick = () => toggleMusic();
       const style = document.createElement('style');

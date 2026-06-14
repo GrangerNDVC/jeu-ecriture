@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Archives des Mots - Lexic Rush Arcade</title>
+  <title>Archives des Mots - Serpent Lexical</title>
   <style>
     * {
       margin: 0;
@@ -43,7 +43,7 @@
     .main-container {
       max-width: 1300px;
       margin: 0 auto;
-      padding: 1.5rem;
+      padding: 1rem;
       position: relative;
       z-index: 2;
     }
@@ -52,11 +52,11 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      padding: 1rem 2rem;
+      padding: 0.8rem 1.5rem;
       margin-bottom: 1rem;
     }
     .logo {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 700;
       background: linear-gradient(135deg, #FFE6A3, #C7A46B);
       background-clip: text;
@@ -64,26 +64,26 @@
       color: transparent;
     }
     .subtitle {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       opacity: 0.8;
-      font-style: italic;
     }
     .hud-right {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
       flex-wrap: wrap;
     }
     .stat {
       background: rgba(0,0,0,0.45);
-      padding: 0.3rem 1rem;
-      border-radius: 3rem;
+      padding: 0.2rem 0.8rem;
+      border-radius: 2rem;
       font-weight: 600;
+      font-size: 0.8rem;
     }
     .xp-bar-container {
       background: rgba(0,0,0,0.5);
       border-radius: 2rem;
-      height: 0.6rem;
-      margin: 1rem 0 2rem;
+      height: 0.5rem;
+      margin: 0.5rem 0 1rem;
       overflow: hidden;
     }
     .xp-bar-fill {
@@ -92,36 +92,9 @@
       background: linear-gradient(90deg, #F3B33D, #FFD966);
       transition: width 0.4s;
     }
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 2rem;
-    }
-    .game-card {
-      background: rgba(30, 35, 70, 0.5);
-      backdrop-filter: blur(16px);
-      border-radius: 2rem;
-      padding: 1.8rem 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.3s;
-      border: 1px solid rgba(255,220,150,0.4);
-    }
-    .game-card:hover {
-      transform: translateY(-8px);
-      border-color: #FFD966;
-      box-shadow: 0 0 20px rgba(255,217,102,0.4);
-    }
-    .badge-game {
-      background: #C49A6C;
-      padding: 0.2rem 1rem;
-      border-radius: 3rem;
-      font-size: 0.7rem;
-      color: #1E1B2F;
-    }
     .game-container {
-      margin-top: 2rem;
-      padding: 1.5rem;
+      margin-top: 1rem;
+      padding: 1rem;
       position: relative;
     }
     .hidden {
@@ -129,95 +102,64 @@
     }
     .close-btn {
       position: absolute;
-      top: 1rem;
-      right: 1.5rem;
+      top: 0.8rem;
+      right: 1rem;
       background: rgba(0,0,0,0.6);
       border: none;
       color: #FFE6A3;
-      padding: 0.3rem 1rem;
+      padding: 0.2rem 0.8rem;
       border-radius: 2rem;
       cursor: pointer;
+      z-index: 10;
     }
-    /* zone de jeu arcade */
-    .arcade-area {
+    .game-area {
       text-align: center;
     }
     .target-word {
-      font-size: 3rem;
+      font-size: 2rem;
       font-weight: bold;
       background: rgba(0,0,0,0.6);
       display: inline-block;
-      padding: 0.2rem 1.5rem;
+      padding: 0.2rem 1rem;
       border-radius: 3rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 15px gold;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 0 12px gold;
     }
     .game-stats {
       display: flex;
       justify-content: center;
-      gap: 2rem;
-      margin: 1rem 0;
-      font-size: 1.3rem;
+      gap: 1.5rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
     }
-    .game-canvas {
-      position: relative;
-      background: rgba(0,0,0,0.3);
-      border-radius: 2rem;
-      min-height: 400px;
-      overflow: hidden;
-      cursor: crosshair;
-      margin: 1rem 0;
+    canvas {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 1.5rem;
+      display: block;
+      margin: 0 auto;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
       border: 2px solid rgba(255,215,0,0.5);
-    }
-    .floating-word {
-      position: absolute;
-      background: rgba(30,40,80,0.9);
-      backdrop-filter: blur(4px);
-      padding: 0.5rem 1rem;
-      border-radius: 2rem;
-      font-weight: bold;
-      font-size: 1.2rem;
-      color: #FFE6A3;
-      border: 1px solid #FFD966;
       cursor: pointer;
-      transition: 0.05s linear;
-      white-space: nowrap;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-      z-index: 10;
     }
-    .floating-word:active {
-      transform: scale(0.95);
-    }
-    .timer-bar {
-      height: 10px;
-      background: #FFD966;
-      width: 100%;
-      border-radius: 5px;
-      transition: width 0.1s linear;
-    }
-    .feedback-shot {
-      position: fixed;
-      pointer-events: none;
-      font-size: 1.5rem;
-      font-weight: bold;
-      animation: fadeUp 0.5s ease-out;
-      z-index: 200;
-    }
-    @keyframes fadeUp {
-      0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-50px); }
+    .controls-info {
+      margin-top: 0.8rem;
+      font-size: 0.7rem;
+      opacity: 0.7;
     }
     button {
       background: #D4AF37;
       border: none;
-      padding: 0.5rem 1.5rem;
+      padding: 0.4rem 1rem;
       border-radius: 2rem;
       font-weight: bold;
+      margin-top: 0.5rem;
       cursor: pointer;
     }
     @media (max-width: 700px) {
-      .floating-word { font-size: 0.9rem; padding: 0.3rem 0.8rem; }
-      .target-word { font-size: 2rem; }
+      .target-word { font-size: 1.4rem; }
+      .game-stats { font-size: 0.8rem; gap: 0.8rem; }
+      canvas { width: 95%; height: auto; }
+      .stat { font-size: 0.7rem; }
     }
   </style>
 </head>
@@ -225,9 +167,9 @@
 <div class="magic-dust"></div>
 <main class="main-container">
   <header class="hud glass-panel">
-    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Tirez sur les synonymes !</p></div>
+    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Serpent Lexical – Mangez les synonymes !</p></div>
     <div class="hud-right">
-      <div class="stat">⭐ Niveau <span id="level">1</span></div>
+      <div class="stat">⭐ Niv <span id="level">1</span></div>
       <div class="stat">✨ XP <span id="xp">0</span></div>
       <div class="stat">🔥 Combo <span id="combo">0</span></div>
       <div class="stat">⚡ Série <span id="streak">0</span></div>
@@ -236,25 +178,27 @@
   </header>
   <div class="xp-bar-container"><div class="xp-bar-fill" id="xpBarFill"></div></div>
 
-  <div class="games-grid">
-    <div class="game-card" data-game="lexicrush_arcade">
-      <h2>🌲 LEXIC RUSH - ARCADE</h2>
-      <p>Tirez sur les synonymes !</p>
-      <span class="badge-game">Nouveau ! Temps limité</span>
-    </div>
-    <!-- autres cartes verrouillées -->
-    <div class="game-card"><h2>📜 Bibliothèque</h2><p>Bientôt</p></div>
-    <div class="game-card"><h2>🏛️ Ponctuation</h2><p>Bientôt</p></div>
-  </div>
-
   <div id="gameContainer" class="game-container hidden glass-panel">
     <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
     <div id="gameInterface"></div>
   </div>
+
+  <!-- Grille des jeux (un seul actif pour l'instant) -->
+  <div class="games-grid" style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+    <div class="game-card" data-game="snake" style="background: rgba(30,35,70,0.6); border-radius: 1.5rem; padding: 1rem; text-align: center; cursor: pointer; width: 250px;">
+      <h2>🐍 SERPENT LEXICAL</h2>
+      <p>Mangez les synonymes !</p>
+      <span class="badge-game" style="background: #C49A6C;">Nouveau !</span>
+    </div>
+    <div class="game-card" style="background: rgba(30,35,70,0.4); border-radius: 1.5rem; padding: 1rem; text-align: center; opacity:0.6;">
+      <h2>📜 Autres jeux</h2>
+      <p>Bientôt</p>
+    </div>
+  </div>
 </main>
 
 <script>
-  // ---------- STORAGE (identique) ----------
+  // ---------- STORAGE (XP, niveau, etc.) ----------
   const STORAGE_KEYS = { XP:'archives_xp', LEVEL:'archives_level', COMBO:'archives_combo', STREAK:'archives_streak', COINS:'archives_coins' };
   const Storage = {
     getXP:()=>parseInt(localStorage.getItem(STORAGE_KEYS.XP)||'0'),
@@ -286,206 +230,360 @@
   }
   function showGameContainer(show){ document.getElementById('gameContainer').classList.toggle('hidden',!show); }
 
-  // ---------- JEU ARCADE ----------
-  const LexicRushArcade = {
-    // Base de données (synonymes)
-    wordBank: [
-      { target:"rapide", synonyms:["véloce","vif","prompt"] },
-      { target:"content", synonyms:["heureux","satisfait","joyeux"] },
-      { target:"petit", synonyms:["minuscule","miniature","menu"] },
-      { target:"parler", synonyms:["discuter","bavarder","converser"] },
-      { target:"beau", synonyms:["magnifique","splendide","joli"] }
-    ],
-    currentRound: null,
-    activeWords: [],
-    intervalId: null,
-    timerInterval: null,
-    timeLeft: 12,
+  // ---------- JEU SNAKE LEXICAL ----------
+  const SnakeLexical = {
+    // Grille 20x15 (taille adaptable)
+    gridW: 20,
+    gridH: 15,
+    cellSize: 30, // px
+    canvas: null,
+    ctx: null,
+    snake: [], // [{x,y}]
+    direction: 'RIGHT',
+    nextDirection: 'RIGHT',
+    food: null,
+    gameLoop: null,
+    gameActive: false,
     score: 0,
     combo: 0,
-    gameActive: false,
-    canvasElem: null,
-    targetElem: null,
-    statsElem: null,
+    targetWord: null,
+    synonymsList: [], // pour le mot cible actuel
+    // Banque de mots (thèmes)
+    wordBank: [
+      { target: "rapide", synonyms: ["véloce","vif","prompt"], antonyms: ["lent","paresseux"] },
+      { target: "content", synonyms: ["heureux","satisfait","joyeux"], antonyms: ["triste","fâché"] },
+      { target: "petit", synonyms: ["minuscule","miniature","menu"], antonyms: ["grand","énorme"] },
+      { target: "parler", synonyms: ["discuter","bavarder","converser"], antonyms: ["taire","se taire"] },
+      { target: "beau", synonyms: ["magnifique","splendide","joli"], antonyms: ["laid","moche"] },
+      { target: "fort", synonyms: ["puissant","solide","vigoureux"], antonyms: ["faible","fragile"] }
+    ],
+    currentRoundData: null,
+    nextTargetTimeout: null,
+    foodGenerationInterval: null,
 
     async launch(containerEl, onReward){
       this.container = containerEl;
       this.onReward = onReward;
       this.initRound();
       this.renderUI();
-      this.startGameLoop();
+      this.initCanvas();
+      this.startGame();
     },
+
     initRound(){
-      // choisir un mot cible aléatoire
+      // Choisir un mot cible aléatoire
       const idx = Math.floor(Math.random() * this.wordBank.length);
-      this.currentRound = { ...this.wordBank[idx] };
+      this.currentRoundData = { ...this.wordBank[idx] };
+      this.targetWord = this.currentRoundData.target;
+      this.synonymsList = this.currentRoundData.synonyms;
       this.score = 0;
       this.combo = 0;
-      this.timeLeft = 14; // secondes
-      this.activeWords = [];
-    },
-    renderUI(){
-      this.container.innerHTML = `
-        <div class="arcade-area">
-          <div class="target-word">🎯 ${this.currentRound.target}</div>
-          <div class="game-stats">
-            <span>💥 Score: <span id="arcadeScore">0</span></span>
-            <span>🔥 Combo: <span id="arcadeCombo">0</span></span>
-            <span>⏱️ Temps: <span id="arcadeTimer">${this.timeLeft}</span></span>
-          </div>
-          <div class="timer-bar" id="timerBar" style="width:100%"></div>
-          <div class="game-canvas" id="gameCanvas" style="height:450px; position:relative;"></div>
-          <button id="resetArcadeBtn">🔄 Nouvelle partie</button>
-        </div>
-      `;
-      this.canvasElem = document.getElementById('gameCanvas');
-      this.updateStatsUI();
-      document.getElementById('resetArcadeBtn').onclick = () => { this.stopGame(); this.initRound(); this.startGameLoop(); };
-      this.startTimer();
-    },
-    updateStatsUI(){
-      if(document.getElementById('arcadeScore')) document.getElementById('arcadeScore').innerText = this.score;
-      if(document.getElementById('arcadeCombo')) document.getElementById('arcadeCombo').innerText = this.combo;
-      if(document.getElementById('arcadeTimer')) document.getElementById('arcadeTimer').innerText = Math.ceil(this.timeLeft);
-      const percent = (this.timeLeft / 14) * 100;
-      const bar = document.getElementById('timerBar');
-      if(bar) bar.style.width = `${Math.max(0,percent)}%`;
-    },
-    startTimer(){
-      if(this.timerInterval) clearInterval(this.timerInterval);
-      this.timerInterval = setInterval(() => {
-        if(!this.gameActive) return;
-        if(this.timeLeft <= 0.1) {
-          this.endGame(false);
-        } else {
-          this.timeLeft -= 0.1;
-          this.updateStatsUI();
-        }
-      }, 100);
-    },
-    startGameLoop(){
+      this.snake = [
+        {x: 10, y: 7},
+        {x: 9, y: 7},
+        {x: 8, y: 7},
+        {x: 7, y: 7}
+      ];
+      this.direction = 'RIGHT';
+      this.nextDirection = 'RIGHT';
       this.gameActive = true;
-      if(this.intervalId) clearInterval(this.intervalId);
-      this.intervalId = setInterval(() => {
-        if(!this.gameActive) return;
-        this.spawnWord();
-        this.moveWords();
-      }, 800);
-      // petite première vague
-      for(let i=0;i<3;i++) setTimeout(()=>this.spawnWord(), i*200);
+      this.generateRandomFood();
+      // Changement de mot cible toutes les 12 secondes (synonyme -> antonyme ou autre)
+      if(this.nextTargetTimeout) clearTimeout(this.nextTargetTimeout);
+      this.scheduleTargetChange();
+      // Réapparition périodique de nourriture si besoin (déjà géré par generateRandomFood après manger, mais on ajoute un filet de sécurité)
+      if(this.foodGenerationInterval) clearInterval(this.foodGenerationInterval);
+      this.foodGenerationInterval = setInterval(() => {
+        if(this.gameActive && !this.food) this.generateRandomFood();
+      }, 3000);
     },
-    spawnWord(){
+
+    scheduleTargetChange(){
+      this.nextTargetTimeout = setTimeout(() => {
+        if(!this.gameActive) return;
+        this.changeTargetWord();
+        this.scheduleTargetChange();
+      }, 10000 + Math.random() * 5000); // change entre 10 et 15 sec
+    },
+
+    changeTargetWord(){
+      // Soit on garde le même mot mais on alterne avec antonymes, soit on change complètement
+      let newTarget;
+      const rand = Math.random();
+      if(rand < 0.4 && this.currentRoundData.antonyms && this.currentRoundData.antonyms.length){
+        // Basculer sur un antonyme comme cible (le joueur doit alors manger les antonymes ? Non, on garde la règle "manger les synonymes du mot cible"
+        // Ici on change le mot cible pour un antonyme de l'ancien, donc les nouveaux synonymes seront ceux de ce nouvel antonyme ?
+        // Pour rester simple: on change complètement de mot cible depuis la banque.
+        // Version simple: piocher un autre mot aléatoire
+        const newIdx = Math.floor(Math.random() * this.wordBank.length);
+        this.currentRoundData = { ...this.wordBank[newIdx] };
+        this.targetWord = this.currentRoundData.target;
+        this.synonymsList = this.currentRoundData.synonyms;
+      } else {
+        const newIdx = Math.floor(Math.random() * this.wordBank.length);
+        this.currentRoundData = { ...this.wordBank[newIdx] };
+        this.targetWord = this.currentRoundData.target;
+        this.synonymsList = this.currentRoundData.synonyms;
+      }
+      this.updateTargetUI();
+      // Effet visuel
+      const targetElem = document.querySelector('.target-word');
+      if(targetElem) targetElem.style.transform = 'scale(1.1)';
+      setTimeout(() => { if(targetElem) targetElem.style.transform = ''; }, 200);
+    },
+
+    updateTargetUI(){
+      const targetSpan = document.getElementById('snakeTargetWord');
+      if(targetSpan) targetSpan.innerText = this.targetWord;
+    },
+
+    generateRandomFood(){
       if(!this.gameActive) return;
-      const isSynonym = Math.random() < 0.45; // 45% de chances d'être un synonyme
+      const freeCells = [];
+      // Récupérer toutes les cellules libres
+      for(let i=0; i<this.gridW; i++){
+        for(let j=0; j<this.gridH; j++){
+          if(!this.snake.some(segment => segment.x === i && segment.y === j)){
+            freeCells.push({x:i, y:j});
+          }
+        }
+      }
+      if(freeCells.length === 0) {
+        this.endGame(true); // victoire par remplissage ?
+        return;
+      }
+      const randomCell = freeCells[Math.floor(Math.random() * freeCells.length)];
+      // Déterminer si cette nourriture est un synonyme ou un leurre (70% synonyme / 30% leurre)
+      const isSynonym = Math.random() < 0.7;
       let wordText;
       if(isSynonym){
-        const syns = this.currentRound.synonyms;
+        const syns = this.synonymsList;
         wordText = syns[Math.floor(Math.random() * syns.length)];
       } else {
-        // leurres : mots hors synonymes (piocher dans d'autres catégories)
-        const otherWords = ["lent","triste","énorme","silence","laid","moche","grand","courir"];
+        // Leurre : prendre un mot hors synonymes (antonyme ou mot d'une autre catégorie)
+        const otherWords = ["lent","triste","énorme","silence","laid","moche","grand","courir","faible"];
         wordText = otherWords[Math.floor(Math.random() * otherWords.length)];
       }
-      const leftPos = Math.random() * (this.canvasElem.clientWidth - 100);
-      const topPos = -40;
-      const wordDiv = document.createElement('div');
-      wordDiv.className = 'floating-word';
-      wordDiv.innerText = wordText;
-      wordDiv.style.left = `${leftPos}px`;
-      wordDiv.style.top = `${topPos}px`;
-      wordDiv.dataset.isSynonym = isSynonym ? "true" : "false";
-      wordDiv.onclick = (e) => {
-        e.stopPropagation();
-        this.shootWord(wordDiv, isSynonym);
+      this.food = {
+        x: randomCell.x,
+        y: randomCell.y,
+        word: wordText,
+        isSynonym: isSynonym
       };
-      this.canvasElem.appendChild(wordDiv);
-      this.activeWords.push({ element: wordDiv, top: topPos, speed: 1.2 + Math.random()*1.5, isSynonym });
+      this.draw();
     },
-    moveWords(){
+
+    initCanvas(){
+      this.canvas = document.getElementById('snakeCanvas');
+      this.ctx = this.canvas.getContext('2d');
+      this.canvas.width = this.gridW * this.cellSize;
+      this.canvas.height = this.gridH * this.cellSize;
+      this.canvas.style.width = `${this.canvas.width}px`;
+      this.canvas.style.height = `${this.canvas.height}px`;
+      this.draw();
+    },
+
+    renderUI(){
+      this.container.innerHTML = `
+        <div class="game-area">
+          <div class="target-word">🎯 CIBLE : <span id="snakeTargetWord">${this.targetWord}</span></div>
+          <div class="game-stats">
+            <span>🍎 Score: <span id="snakeScore">0</span></span>
+            <span>🔥 Combo: <span id="snakeCombo">0</span></span>
+            <span>📏 Longueur: <span id="snakeLength">${this.snake.length}</span></span>
+          </div>
+          <canvas id="snakeCanvas" width="${this.gridW*this.cellSize}" height="${this.gridH*this.cellSize}" style="border-radius:1rem;"></canvas>
+          <div class="controls-info">← ↑ ↓ → ou swipe sur l'écran (mobile)</div>
+          <button id="resetSnakeBtn">🔄 Nouvelle partie</button>
+        </div>
+      `;
+      this.updateStatsUI();
+      document.getElementById('resetSnakeBtn').onclick = () => {
+        this.stopGame();
+        this.initRound();
+        this.startGame();
+      };
+      this.initCanvas();
+    },
+
+    updateStatsUI(){
+      if(document.getElementById('snakeScore')) document.getElementById('snakeScore').innerText = this.score;
+      if(document.getElementById('snakeCombo')) document.getElementById('snakeCombo').innerText = this.combo;
+      if(document.getElementById('snakeLength')) document.getElementById('snakeLength').innerText = this.snake.length;
+    },
+
+    startGame(){
+      if(this.gameLoop) clearInterval(this.gameLoop);
+      this.gameActive = true;
+      this.gameLoop = setInterval(() => this.update(), 150);
+      this.setupControls();
+      this.draw();
+    },
+
+    stopGame(){
+      this.gameActive = false;
+      if(this.gameLoop) clearInterval(this.gameLoop);
+      if(this.nextTargetTimeout) clearTimeout(this.nextTargetTimeout);
+      if(this.foodGenerationInterval) clearInterval(this.foodGenerationInterval);
+    },
+
+    update(){
       if(!this.gameActive) return;
-      for(let i=0; i<this.activeWords.length; i++){
-        const w = this.activeWords[i];
-        w.top += w.speed;
-        w.element.style.top = `${w.top}px`;
-        if(w.top > this.canvasElem.clientHeight + 50){
-          w.element.remove();
-          this.activeWords.splice(i,1);
-          i--;
+      // Appliquer la direction
+      this.direction = this.nextDirection;
+      // Calculer nouvelle tête
+      let newHead = { ...this.snake[0] };
+      switch(this.direction){
+        case 'RIGHT': newHead.x++; break;
+        case 'LEFT': newHead.x--; break;
+        case 'UP': newHead.y--; break;
+        case 'DOWN': newHead.y++; break;
+      }
+      // Vérifier collision murs ou corps
+      if(newHead.x < 0 || newHead.x >= this.gridW || newHead.y < 0 || newHead.y >= this.gridH || this.snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)){
+        this.endGame(false);
+        return;
+      }
+      // Manger ?
+      const willEat = (this.food && newHead.x === this.food.x && newHead.y === this.food.y);
+      // Ajouter nouvelle tête
+      this.snake.unshift(newHead);
+      if(!willEat){
+        this.snake.pop();
+      } else {
+        // Gestion de la nourriture
+        const isSynonym = this.food.isSynonym;
+        if(isSynonym){
+          // Bonne nourriture : points, combo, ne pas grandir (on a déjà ajouté la tête, on ne pop pas => donc grandit d'1 normalement. Mais on veut que les synonymes ne fassent pas grandir OU peu ?
+          // Règle: synonyme = +10 points, +1 combo, pas de croissance supplémentaire (déjà la longueur augmente de 1 car on n'a pas enlevé la queue) – donc c'est bien une croissance normale.
+          // Pour rendre plus intéressant: synonyme = ne fait pas grandir (on doit retirer un segment ? Non, compliqué. Je vais dire que synonyme = point gagné mais pas de longueur supplémentaire = on enlève la queue en plus ? Non.
+          // Autre règle: quand on mange un synonyme, on gagne des points et le serpent ne grandit PAS (on supprime la queue en plus). Pour implémenter: après avoir ajouté tête et avant de pop, si c'est un synonyme, on pop deux fois? Non.
+          // Version simple: le serpent grandit toujours d'1 case quand il mange. Mais pour différencier: les mauvais mots font grandir d'1 case supplémentaire (pénalité). Donc:
+          // Ici, c'est un bon mot: pas de pénalité. On garde la croissance normale (1 case). On ajoute bonus.
+          this.score += 10 + this.combo * 2;
+          this.combo++;
+          if(this.onReward) this.onReward(5, 2, false); // +5xp +2 pièces par bonne nourriture
+          refreshHUD();
+        } else {
+          // Mauvais mot : pénalité : le serpent grandit d'1 case supplémentaire (on ajoute un doublon à la fin)
+          // Ajout d'un segment supplémentaire (dupliquer la queue)
+          const tail = this.snake[this.snake.length-1];
+          this.snake.push({...tail});
+          this.combo = 0;
+          if(this.onReward) this.onReward(0,0,true);
+          refreshHUD();
+          // Pas de points, combo perdu
+        }
+        // Générer une nouvelle nourriture
+        this.generateRandomFood();
+        this.updateStatsUI();
+        // Vérifier victoire (score > 200 par exemple)
+        if(this.score >= 200){
+          this.endGame(true);
         }
       }
-      requestAnimationFrame(() => this.moveWords()); // boucle continue
-    },
-    shootWord(element, isSynonym){
-      if(!this.gameActive) return;
-      const correct = (isSynonym === true);
-      if(correct){
-        // BON TIR
-        let points = 10 + Math.floor(this.combo * 2);
-        this.score += points;
-        this.combo++;
-        this.addFeedbackEffect(element, `+${points}`, '#8BC34A');
-        // Récompense instantanée (XP, pièces)
-        if(this.onReward) this.onReward(5, 2, false); // +5xp, +2 pièces par tir réussi
-        refreshHUD();
-      } else {
-        // MAUVAIS TIR
-        this.combo = 0;
-        this.addFeedbackEffect(element, 'Mauvais !', '#E57373');
-        if(this.onReward) this.onReward(0,0,true); // reset combo global
-        refreshHUD();
-      }
-      // Supprimer la bulle touchée
-      const index = this.activeWords.findIndex(w => w.element === element);
-      if(index !== -1){
-        this.activeWords[index].element.remove();
-        this.activeWords.splice(index,1);
-      }
       this.updateStatsUI();
-      // Vérifier si le score atteint un seuil de victoire (par exemple 100 points)
-      if(this.score >= 80){
-        this.endGame(true);
+      this.draw();
+    },
+
+    draw(){
+      if(!this.ctx) return;
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      // Dessiner grille
+      this.ctx.strokeStyle = 'rgba(255,230,170,0.2)';
+      for(let i=0; i<=this.gridW; i++){
+        this.ctx.beginPath();
+        this.ctx.moveTo(i*this.cellSize, 0);
+        this.ctx.lineTo(i*this.cellSize, this.canvas.height);
+        this.ctx.stroke();
+        this.ctx.moveTo(0, i*this.cellSize);
+        this.ctx.lineTo(this.canvas.width, i*this.cellSize);
+        this.ctx.stroke();
+      }
+      // Serpent
+      this.snake.forEach((seg, idx) => {
+        const grad = this.ctx.createLinearGradient(seg.x*this.cellSize, seg.y*this.cellSize, (seg.x+1)*this.cellSize, (seg.y+1)*this.cellSize);
+        grad.addColorStop(0, '#4CAF50');
+        grad.addColorStop(1, '#2E7D32');
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(seg.x*this.cellSize, seg.y*this.cellSize, this.cellSize-1, this.cellSize-1);
+        if(idx === 0){
+          this.ctx.fillStyle = '#FFD966';
+          this.ctx.fillRect(seg.x*this.cellSize+5, seg.y*this.cellSize+5, this.cellSize-10, this.cellSize-10);
+        }
+      });
+      // Nourriture
+      if(this.food){
+        this.ctx.fillStyle = this.food.isSynonym ? '#FFB347' : '#E57373';
+        this.ctx.shadowBlur = 8;
+        this.ctx.fillRect(this.food.x*this.cellSize, this.food.y*this.cellSize, this.cellSize-1, this.cellSize-1);
+        this.ctx.shadowBlur = 0;
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = `bold ${Math.floor(this.cellSize*0.3)}px Inter`;
+        this.ctx.fillText(this.food.word.slice(0,4), this.food.x*this.cellSize+4, this.food.y*this.cellSize+this.cellSize-8);
       }
     },
-    addFeedbackEffect(element, text, color){
-      const rect = element.getBoundingClientRect();
-      const feedback = document.createElement('div');
-      feedback.className = 'feedback-shot';
-      feedback.innerText = text;
-      feedback.style.color = color;
-      feedback.style.left = `${rect.left + rect.width/2}px`;
-      feedback.style.top = `${rect.top}px`;
-      feedback.style.position = 'fixed';
-      document.body.appendChild(feedback);
-      setTimeout(()=>feedback.remove(), 500);
+
+    setupControls(){
+      const handleKey = (e) => {
+        const key = e.key;
+        if(!this.gameActive) return;
+        if(key === 'ArrowUp' && this.direction !== 'DOWN') this.nextDirection = 'UP';
+        else if(key === 'ArrowDown' && this.direction !== 'UP') this.nextDirection = 'DOWN';
+        else if(key === 'ArrowLeft' && this.direction !== 'RIGHT') this.nextDirection = 'LEFT';
+        else if(key === 'ArrowRight' && this.direction !== 'LEFT') this.nextDirection = 'RIGHT';
+      };
+      window.removeEventListener('keydown', handleKey);
+      window.addEventListener('keydown', handleKey);
+      // Swipe pour mobile
+      let touchStart = null;
+      const canvas = this.canvas;
+      const handleTouchStart = (e) => {
+        touchStart = e.touches[0];
+      };
+      const handleTouchMove = (e) => {
+        if(!touchStart || !this.gameActive) return;
+        const dx = e.touches[0].clientX - touchStart.clientX;
+        const dy = e.touches[0].clientY - touchStart.clientY;
+        if(Math.abs(dx) < Math.abs(dy) && Math.abs(dy) > 20){
+          if(dy > 0 && this.direction !== 'UP') this.nextDirection = 'DOWN';
+          else if(dy < 0 && this.direction !== 'DOWN') this.nextDirection = 'UP';
+        } else if(Math.abs(dx) > 20){
+          if(dx > 0 && this.direction !== 'LEFT') this.nextDirection = 'RIGHT';
+          else if(dx < 0 && this.direction !== 'RIGHT') this.nextDirection = 'LEFT';
+        }
+        touchStart = null;
+      };
+      canvas.addEventListener('touchstart', handleTouchStart);
+      canvas.addEventListener('touchmove', handleTouchMove);
+      canvas.addEventListener('touchend', () => touchStart = null);
+      this.cleanupControls = () => {
+        window.removeEventListener('keydown', handleKey);
+        canvas.removeEventListener('touchstart', handleTouchStart);
+        canvas.removeEventListener('touchmove', handleTouchMove);
+      };
     },
+
     endGame(isVictory){
       this.gameActive = false;
-      clearInterval(this.intervalId);
-      clearInterval(this.timerInterval);
-      // Supprimer toutes les bulles
-      for(let w of this.activeWords) w.element.remove();
-      this.activeWords = [];
-      let message = isVictory ? "✨ VICTOIRE ! Vous avez dépassé 80 points ✨" : "⏰ Temps écoulé... Réessayez !";
+      clearInterval(this.gameLoop);
+      clearTimeout(this.nextTargetTimeout);
+      clearInterval(this.foodGenerationInterval);
+      if(this.cleanupControls) this.cleanupControls();
+      let message = isVictory ? "🏆 VICTOIRE ! Vous avez atteint 200 points !" : "💀 Game Over... Réessayez !";
       let bonusXP = 0, bonusCoins = 0;
       if(isVictory){
-        bonusXP = 50;
-        bonusCoins = 20;
+        bonusXP = 80;
+        bonusCoins = 40;
         if(this.onReward) this.onReward(bonusXP, bonusCoins, false);
         refreshHUD();
       }
-      this.container.innerHTML += `<div style="text-align:center; margin-top:1rem;"><p>${message}</p><p>Score final : ${this.score}</p><button id="playAgainBtn">🔫 Rejouer</button></div>`;
-      document.getElementById('playAgainBtn')?.addEventListener('click',()=>{
+      this.container.innerHTML += `<div style="text-align:center; margin-top:1rem;"><p>${message}</p><p>Score: ${this.score}</p><button id="playAgainSnakeBtn">🐍 Rejouer</button></div>`;
+      document.getElementById('playAgainSnakeBtn')?.addEventListener('click',()=>{
+        this.stopGame();
         this.initRound();
-        this.startGameLoop();
-        this.renderUI();
+        this.startGame();
       });
-    },
-    stopGame(){
-      this.gameActive = false;
-      if(this.intervalId) clearInterval(this.intervalId);
-      if(this.timerInterval) clearInterval(this.timerInterval);
-      for(let w of this.activeWords) w.element.remove();
-      this.activeWords = [];
     }
   };
 
@@ -493,21 +591,18 @@
   const App = {
     init(){
       refreshHUD();
-      this.bindCards();
+      this.bindCard();
       document.getElementById('closeGameBtn').onclick = () => showGameContainer(false);
     },
-    bindCards(){
-      document.querySelectorAll('.game-card').forEach(card => {
-        card.addEventListener('click', () => {
-          if(card.dataset.game === 'lexicrush_arcade') this.startArcade();
-          else alert("🔮 Autres jeux à venir bientôt !");
-        });
-      });
+    bindCard(){
+      const card = document.querySelector('.game-card[data-game="snake"]');
+      if(card) card.addEventListener('click', () => this.startSnake());
+      else document.querySelector('.games-grid .game-card')?.addEventListener('click', () => this.startSnake());
     },
-    startArcade(){
+    startSnake(){
       showGameContainer(true);
       const container = document.getElementById('gameInterface');
-      LexicRushArcade.launch(container, (xpGain, coinGain, isFail) => {
+      SnakeLexical.launch(container, (xpGain, coinGain, isFail) => {
         if(isFail) Storage.resetCombo();
         Storage.addReward(xpGain, coinGain, isFail ? 0 : 1);
         refreshHUD();

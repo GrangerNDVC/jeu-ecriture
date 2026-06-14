@@ -6,18 +6,12 @@
   <title>Les Archives des Mots</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <script defer src="storage.js"></script>
-  <script defer src="ui.js"></script>
-  <script defer src="games.js"></script>
-  <script defer src="engine.js"></script>
-  <script defer src="app.js"></script>
 </head>
 <body>
   <div class="magic-dust"></div>
   <div class="glass-overlay"></div>
 
   <main id="app" class="main-container">
-    <!-- HEADER avec HUD -->
     <header class="hud glass-panel">
       <div class="hud-left">
         <h1 class="logo">📖 LES ARCHIVES DES MOTS</h1>
@@ -32,17 +26,15 @@
       </div>
     </header>
 
-    <!-- Barre de progression XP -->
     <div class="xp-bar-container">
       <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
     </div>
 
-    <!-- Grille des 6 cartes (jeux) -->
     <section class="games-grid" id="gamesGrid">
       <div class="game-card" data-game="lexicrush">
         <div class="card-glow"></div>
         <h2>🌲 Forêt Lexicale</h2>
-        <p>Synonymes / Antonymes</p>
+        <p>Synonymes & Antonymes</p>
         <span class="badge-game">Lexic Rush</span>
       </div>
       <div class="game-card" data-game="syntax">
@@ -53,7 +45,7 @@
       <div class="game-card" data-game="ponctuation">
         <div class="card-glow"></div>
         <h2>🏛️ Temple de la Ponctuation</h2>
-        <p>Virgules, points, exclamations</p>
+        <p>Virgules, points...</p>
       </div>
       <div class="game-card" data-game="connecteurs">
         <div class="card-glow"></div>
@@ -72,18 +64,15 @@
       </div>
     </section>
 
-    <!-- Conteneur dynamique du mini‑jeu -->
     <div id="gameContainer" class="game-container hidden glass-panel">
       <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
       <div id="gameInterface"></div>
     </div>
   </main>
 
-  <script>
-    // simple sécurité pour forcer l'affichage après chargement
-    window.addEventListener('load', () => {
-      if (window.App) window.App.init();
-    });
-  </script>
+  <script src="storage.js"></script>
+  <script src="ui.js"></script>
+  <script src="games.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

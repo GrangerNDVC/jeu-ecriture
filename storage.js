@@ -1,4 +1,3 @@
-// storage.js
 const STORAGE_KEYS = {
   XP: 'archives_xp',
   LEVEL: 'archives_level',
@@ -7,7 +6,7 @@ const STORAGE_KEYS = {
   COINS: 'archives_coins'
 };
 
-export const Storage = {
+const Storage = {
   getXP: () => parseInt(localStorage.getItem(STORAGE_KEYS.XP) || '0'),
   setXP: (xp) => localStorage.setItem(STORAGE_KEYS.XP, xp),
   
@@ -23,7 +22,6 @@ export const Storage = {
   getCoins: () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS) || '0'),
   setCoins: (c) => localStorage.setItem(STORAGE_KEYS.COINS, c),
   
-  // Récompense standard
   addReward: (xpGain, coinsGain, comboInc = 1) => {
     let xp = Storage.getXP();
     let coins = Storage.getCoins();
@@ -33,7 +31,6 @@ export const Storage = {
     xp += xpGain;
     coins += coinsGain;
     
-    // Gestion niveau (formule simple : niveau = 1 + floor(xp/100))
     let newLevel = 1 + Math.floor(xp / 100);
     Storage.setXP(xp);
     Storage.setCoins(coins);

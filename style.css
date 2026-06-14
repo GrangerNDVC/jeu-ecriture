@@ -1,0 +1,289 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: radial-gradient(circle at 20% 30%, #0a0f2a, #020617);
+  min-height: 100vh;
+  color: #f5e9d3;
+  overflow-x: hidden;
+  position: relative;
+}
+.magic-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,215,130,0.15), rgba(0,0,0,0.4));
+  overflow: hidden;
+}
+.floating-book {
+  position: absolute;
+  font-size: 2.5rem;
+  opacity: 0.2;
+  animation: floatBook 15s infinite alternate;
+  pointer-events: none;
+}
+@keyframes floatBook {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-40px) rotate(5deg); }
+}
+.light-spot {
+  position: absolute;
+  background: radial-gradient(circle, rgba(255,220,150,0.2), transparent);
+  border-radius: 50%;
+  width: 300px;
+  height: 300px;
+  animation: pulseLight 8s infinite alternate;
+}
+@keyframes pulseLight {
+  0% { opacity: 0.2; transform: scale(1); }
+  100% { opacity: 0.6; transform: scale(1.2); }
+}
+.glass-panel {
+  background: rgba(20, 25, 55, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 230, 170, 0.3);
+  box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4);
+}
+.main-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 1rem;
+  position: relative;
+  z-index: 2;
+}
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.8rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFE6A3, #C7A46B);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.subtitle {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+.hud-right {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.stat {
+  background: rgba(0,0,0,0.5);
+  padding: 0.2rem 0.8rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.xp-bar-container {
+  background: rgba(0,0,0,0.5);
+  border-radius: 2rem;
+  height: 0.5rem;
+  margin: 0.5rem 0 1rem;
+  overflow: hidden;
+}
+.xp-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #F3B33D, #FFD966);
+  transition: width 0.4s;
+}
+.games-grid {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.game-card {
+  background: rgba(30, 35, 70, 0.6);
+  backdrop-filter: blur(16px);
+  border-radius: 1.5rem;
+  padding: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+  border: 1px solid rgba(255,220,150,0.4);
+  width: 240px;
+}
+.game-card:hover {
+  transform: scale(1.02);
+  border-color: #FFD966;
+}
+.badge-game {
+  display: inline-block;
+  background: #C49A6C;
+  margin-top: 0.5rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  color: #1E1B2F;
+}
+.game-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  position: relative;
+}
+.hidden {
+  display: none;
+}
+.close-btn {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  color: #FFE6A3;
+  padding: 0.2rem 1rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  z-index: 20;
+  font-weight: bold;
+}
+.game-area {
+  text-align: center;
+}
+.context {
+  background: rgba(0,0,0,0.5);
+  border-radius: 1.5rem;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+}
+.sentence {
+  font-size: 1.2rem;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+.target-word {
+  display: inline-block;
+  background: #FFD966;
+  color: #1E1B2F;
+  padding: 0.2rem 1rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  margin: 0.3rem;
+}
+.instruction {
+  font-size: 1.1rem;
+  font-weight: bold;
+  background: rgba(0,0,0,0.6);
+  display: inline-block;
+  padding: 0.2rem 1.2rem;
+  border-radius: 2rem;
+}
+.game-stats {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.game-canvas {
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2rem;
+  min-height: 400px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+  border: 2px solid rgba(255,215,0,0.5);
+  cursor: crosshair;
+}
+.bubble {
+  position: absolute;
+  background: radial-gradient(circle at 30% 30%, rgba(255,230,150,0.95), rgba(200,160,80,0.85));
+  backdrop-filter: blur(4px);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  color: #1E1B2F;
+  font-size: 0.9rem;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  border: 1px solid #FFD966;
+  white-space: nowrap;
+}
+.bubble:active {
+  transform: scale(0.95);
+}
+.timer-bar {
+  height: 8px;
+  background: #FFD966;
+  width: 100%;
+  border-radius: 4px;
+  transition: width 0.1s linear;
+  margin-top: 0.5rem;
+}
+button {
+  background: #D4AF37;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  margin: 0.5rem;
+  cursor: pointer;
+}
+.progress {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+.zoom-transition {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 2.5rem;
+  font-weight: bold;
+  background: rgba(0,0,0,0.85);
+  padding: 1rem 2rem;
+  border-radius: 3rem;
+  color: #FFD966;
+  white-space: nowrap;
+  z-index: 1000;
+  animation: zoomFade 0.8s forwards;
+  pointer-events: none;
+  text-align: center;
+}
+@keyframes zoomFade {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; visibility: hidden; }
+}
+.music-btn {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: rgba(0,0,0,0.6);
+  border-radius: 2rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  z-index: 100;
+  cursor: pointer;
+}
+@media (max-width: 700px) {
+  .sentence { font-size: 0.9rem; }
+  .bubble { font-size: 0.7rem; padding: 0.3rem 0.7rem; white-space: normal; }
+  .game-canvas { min-height: 320px; }
+  .zoom-transition { font-size: 1.5rem; white-space: normal; width: 80%; }
+}

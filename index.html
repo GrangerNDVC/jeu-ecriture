@@ -3,56 +3,430 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Archives des Mots - Lexic Rush</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="js/app.js" defer></script>
+  <title>Archives des Mots</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:      #F5C842;
+      --gold-pale: #FFE98A;
+      --gold-dim:  #C49A2E;
+      --violet:    #7B2FBE;
+      --violet-2:  #9D4EDD;
+      --ink:       #05080F;
+      --ink-2:     #0D1220;
+      --glass:     rgba(255,255,255,0.04);
+      --glass-b:   rgba(255,255,255,0.09);
+      --text:      #EDE3CC;
+      --text-dim:  rgba(237,227,204,0.55);
+      --green:     #4ADE80;
+      --red:       #F87171;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--ink);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── FOND ANIMÉ ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(123,47,190,0.18), transparent),
+        radial-gradient(ellipse 60% 50% at 85% 85%, rgba(245,200,66,0.10), transparent),
+        var(--ink);
+    }
+    .bg-star {
+      position: absolute; border-radius: 50%;
+      background: var(--gold-pale);
+      animation: twinkle var(--d, 4s) ease-in-out infinite alternate;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%   { opacity: 0;    transform: scale(0.6); }
+      100% { opacity: 0.55; transform: scale(1.2); }
+    }
+    .bg-orb {
+      position: absolute; border-radius: 50%; filter: blur(80px);
+      animation: drift var(--d,18s) ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      0%   { transform: translate(0,0) scale(1); }
+      100% { transform: translate(var(--tx,30px), var(--ty,-20px)) scale(1.08); }
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 2;
+      max-width: 1100px; margin: 0 auto;
+      padding: 1.5rem 1.2rem 4rem;
+      display: flex; flex-direction: column; gap: 2rem;
+    }
+
+    /* ── HUD ── */
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.8rem;
+      background: var(--glass); border: 1px solid rgba(245,200,66,0.18);
+      border-radius: 1.4rem; padding: 0.9rem 1.4rem;
+      backdrop-filter: blur(16px);
+    }
+    .hud-brand { display: flex; flex-direction: column; gap: 0.1rem; }
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-weight: 900; letter-spacing: 0.04em;
+      background: linear-gradient(120deg, var(--gold-pale), var(--gold), var(--gold-dim));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .logo-sub {
+      font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hud-stats { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .stat {
+      display: flex; align-items: center; gap: 0.35rem;
+      background: rgba(0,0,0,0.45); border: 1px solid rgba(245,200,66,0.12);
+      border-radius: 2rem; padding: 0.25rem 0.75rem;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .stat-val { color: var(--gold); }
+
+    /* ── XP BAR ── */
+    .xp-track {
+      height: 4px; background: rgba(255,255,255,0.07);
+      border-radius: 4px; overflow: hidden;
+    }
+    .xp-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--violet-2), var(--gold));
+      border-radius: 4px; transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── HERO ── */
+    .hero { text-align: center; padding: 1rem 0 0.5rem; }
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      font-weight: 900; line-spacing: -0.02em;
+      background: linear-gradient(160deg, #fff 0%, var(--gold-pale) 40%, var(--gold) 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .hero-sub {
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: var(--text-dim); max-width: 480px; margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── GRILLE DES JEUX ── */
+    .section-label {
+      font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 700;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, rgba(245,200,66,0.25), transparent);
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+
+    /* carte avec flip 3D */
+    .game-card-wrap {
+      perspective: 900px;
+    }
+    .game-card {
+      position: relative;
+      background: var(--glass);
+      border: 1px solid rgba(245,200,66,0.18);
+      border-radius: 1.6rem;
+      padding: 1.6rem 1.3rem 1.4rem;
+      cursor: pointer;
+      transition:
+        transform 0.35s cubic-bezier(.4,0,.2,1),
+        box-shadow 0.35s,
+        border-color 0.25s;
+      transform-style: preserve-3d;
+      backdrop-filter: blur(14px);
+      user-select: none;
+    }
+    .game-card:hover {
+      transform: rotateY(-6deg) rotateX(3deg) translateY(-6px);
+      box-shadow:
+        0 24px 48px -12px rgba(0,0,0,0.6),
+        0 0 0 1px var(--gold),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      border-color: var(--gold);
+    }
+    .game-card.locked {
+      opacity: 0.4; cursor: default; filter: grayscale(0.6);
+    }
+    .game-card.locked:hover { transform: none; box-shadow: none; border-color: rgba(245,200,66,0.18); }
+
+    .card-icon {
+      font-size: 2.2rem; margin-bottom: 0.8rem; display: block;
+      filter: drop-shadow(0 0 12px rgba(245,200,66,0.5));
+    }
+    .card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem; font-weight: 700;
+      color: var(--gold-pale);
+      margin-bottom: 0.4rem; letter-spacing: 0.02em;
+    }
+    .card-desc {
+      font-size: 0.78rem; color: var(--text-dim);
+      line-height: 1.5; margin-bottom: 0.9rem;
+    }
+    .card-badge {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: rgba(123,47,190,0.35); border: 1px solid rgba(157,78,221,0.5);
+      color: #C4A0F0; border-radius: 2rem;
+      font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.7rem;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .card-badge.gold {
+      background: rgba(245,200,66,0.15); border-color: rgba(245,200,66,0.4);
+      color: var(--gold);
+    }
+    .card-badge.soon {
+      background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);
+      color: var(--text-dim);
+    }
+
+    /* ── FOOTER STATS ── */
+    .footer-stats {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    .fstat {
+      background: var(--glass); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 1.2rem; padding: 1rem;
+      text-align: center; display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .fstat-val {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem; font-weight: 900; color: var(--gold);
+    }
+    .fstat-lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* ── MUSIQUE ── */
+    .music-btn {
+      position: fixed; bottom: 1.2rem; right: 1.2rem; z-index: 100;
+      background: rgba(5,8,15,0.85); border: 1px solid rgba(245,200,66,0.25);
+      color: var(--gold-pale); border-radius: 2rem;
+      padding: 0.45rem 1rem; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; backdrop-filter: blur(10px);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .music-btn:hover { border-color: var(--gold); background: rgba(245,200,66,0.1); }
+
+    @media (max-width: 600px) {
+      .footer-stats { grid-template-columns: repeat(3,1fr); }
+      .fstat-val { font-size: 1.2rem; }
+      .hud-stats .stat:nth-child(n+4) { display: none; }
+    }
+  </style>
 </head>
 <body>
-<div class="magic-bg">
-  <div class="light-spot" style="top:10%; left:5%;"></div>
-  <div class="light-spot" style="bottom:10%; right:5%; width:400px; height:400px;"></div>
-  <div class="floating-book" style="top:15%; left:80%;">📖</div>
-  <div class="floating-book" style="top:60%; left:10%; animation-duration: 20s;">📚</div>
-  <div class="floating-book" style="top:30%; left:40%; animation-duration: 18s;">🔮</div>
-  <div class="floating-book" style="bottom:20%; left:70%;">✨</div>
-</div>
 
-<main class="main-container">
-  <header class="hud glass-panel">
-    <div>
-      <h1 class="logo">📖 ARCHIVES DES MOTS</h1>
-      <p class="subtitle">Lexic Rush - Attention : mauvais mot = -5 points</p>
+<!-- Fond animé généré en JS -->
+<div class="bg" id="bg"></div>
+
+<div class="page">
+
+  <!-- HUD -->
+  <header class="hud">
+    <div class="hud-brand">
+      <div class="logo">📖 Archives des Mots</div>
+      <div class="logo-sub">Académie de l'écriture</div>
     </div>
-    <div class="hud-right">
-      <div class="stat">⭐ Niv <span id="level">1</span></div>
-      <div class="stat">✨ XP <span id="xp">0</span></div>
-      <div class="stat">🔥 Combo <span id="combo">0</span></div>
-      <div class="stat">⚡ Série <span id="streak">0</span></div>
-      <div class="stat">🪙 Pièces <span id="coins">0</span></div>
+    <div class="hud-stats">
+      <div class="stat">⭐ Niv&nbsp;<span class="stat-val" id="level">1</span></div>
+      <div class="stat">✨ XP&nbsp;<span class="stat-val" id="xp">0</span></div>
+      <div class="stat">🔥 Combo&nbsp;<span class="stat-val" id="combo">0</span></div>
+      <div class="stat">🪙 <span class="stat-val" id="coins">0</span></div>
     </div>
   </header>
-  <div class="xp-bar-container">
-    <div class="xp-bar-fill" id="xpBarFill"></div>
-  </div>
+  <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
 
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-title">Maîtrise les mots.<br>Conquiers les manches.</h1>
+    <p class="hero-sub">Chaque bonne réponse affûte ta plume. Chaque erreur coûte des points. Choisis ton jeu et entre dans l'arène.</p>
+  </section>
+
+  <!-- JEUX -->
+  <div class="section-label">Jeux disponibles</div>
   <div class="games-grid">
-    <div class="game-card" data-game="lexicrush">
-      <h2>🔫 LEXIC RUSH ÉVOLUÉ</h2>
-      <p>Phrases, consignes variées, 10 manches</p>
-      <span class="badge-game">+ Points rares / -5 si erreur</span>
+
+    <div class="game-card-wrap">
+      <div class="game-card" onclick="goTo('lexicrush.html')">
+        <span class="card-icon">🔫</span>
+        <div class="card-title">Lexic Rush</div>
+        <div class="card-desc">Des bulles de mots tombent du ciel. Tire sur les bons synonymes, antonymes et familles de mots avant qu'ils ne s'échappent.</div>
+        <span class="card-badge gold">⚡ Points rares · −5 si erreur</span>
+      </div>
     </div>
-    <div class="game-card" style="opacity:0.5;">
-      <h2>📜 Autres jeux</h2>
-      <p>Bientôt</p>
+
+    <div class="game-card-wrap">
+      <div class="game-card locked">
+        <span class="card-icon">🔤</span>
+        <div class="card-title">Ordre des Mots</div>
+        <div class="card-desc">Replace les mots dans le bon ordre pour former des phrases correctes et élégantes.</div>
+        <span class="card-badge soon">🔒 Bientôt</span>
+      </div>
+    </div>
+
+    <div class="game-card-wrap">
+      <div class="game-card locked">
+        <span class="card-icon">🔡</span>
+        <div class="card-title">Ponctuation</div>
+        <div class="card-desc">Place les virgules, points et majuscules exactement où il faut dans des textes en désordre.</div>
+        <span class="card-badge soon">🔒 Bientôt</span>
+      </div>
+    </div>
+
+    <div class="game-card-wrap">
+      <div class="game-card locked">
+        <span class="card-icon">📜</span>
+        <div class="card-title">Cohérence du Texte</div>
+        <div class="card-desc">Remets les paragraphes dans le bon ordre pour que l'histoire ait du sens.</div>
+        <span class="card-badge soon">🔒 Bientôt</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STATS DU JOUEUR -->
+  <div class="section-label">Ton parcours</div>
+  <div class="footer-stats">
+    <div class="fstat">
+      <div class="fstat-val" id="fLevel">1</div>
+      <div class="fstat-lbl">Niveau</div>
+    </div>
+    <div class="fstat">
+      <div class="fstat-val" id="fCoins">0</div>
+      <div class="fstat-lbl">Pièces</div>
+    </div>
+    <div class="fstat">
+      <div class="fstat-val" id="fStreak">0</div>
+      <div class="fstat-lbl">Meilleure série</div>
     </div>
   </div>
 
-  <div id="gameContainer" class="game-container hidden glass-panel">
-    <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
-    <div id="gameInterface"></div>
-  </div>
-</main>
+</div>
 
-<div id="musicToggle" class="music-btn">🎵 Musique ON</div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 Musique ON</button>
+
+<script src="js/storage.js"></script>
+<script>
+  // ── FOND ANIMÉ ──
+  const bg = document.getElementById('bg');
+  // étoiles
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'bg-star';
+    const sz = 1 + Math.random() * 2;
+    s.style.cssText = `
+      width:${sz}px; height:${sz}px;
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      --d:${2+Math.random()*5}s;
+      animation-delay:${Math.random()*4}s;
+    `;
+    bg.appendChild(s);
+  }
+  // orbes
+  const orbData = [
+    { x:10, y:15, w:380, h:280, c:'rgba(123,47,190,0.22)', tx:'40px', ty:'-25px', d:'20s' },
+    { x:70, y:60, w:300, h:250, c:'rgba(245,200,66,0.09)', tx:'-30px', ty:'20px',  d:'25s' },
+    { x:45, y:80, w:200, h:180, c:'rgba(157,78,221,0.12)', tx:'20px', ty:'-30px', d:'17s' },
+  ];
+  orbData.forEach(o => {
+    const d = document.createElement('div');
+    d.className = 'bg-orb';
+    d.style.cssText = `
+      left:${o.x}%; top:${o.y}%;
+      width:${o.w}px; height:${o.h}px;
+      background:${o.c};
+      --d:${o.d}; --tx:${o.tx}; --ty:${o.ty};
+    `;
+    bg.appendChild(d);
+  });
+
+  // ── HUD ──
+  function refreshHUD() {
+    const xp    = Storage.getXP();
+    const level = Storage.getLevel();
+    document.getElementById('level').textContent  = level;
+    document.getElementById('xp').textContent     = xp;
+    document.getElementById('combo').textContent  = Storage.getCombo();
+    document.getElementById('coins').textContent  = Storage.getCoins();
+    document.getElementById('xpFill').style.width = `${xp % 100}%`;
+    document.getElementById('fLevel').textContent  = level;
+    document.getElementById('fCoins').textContent  = Storage.getCoins();
+    document.getElementById('fStreak').textContent = Storage.getStreak();
+  }
+  refreshHUD();
+
+  // ── NAVIGATION ──
+  function goTo(url) {
+    // micro-transition
+    document.body.style.transition = 'opacity 0.25s';
+    document.body.style.opacity = '0';
+    setTimeout(() => window.location.href = url, 250);
+  }
+
+  // ── AUDIO ──
+  let audioCtx = null, musicInterval = null, musicGain = null, musicOn = true;
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = 0.18;
+    musicGain.connect(audioCtx.destination);
+  }
+  function startMusic() {
+    if (!musicOn || !audioCtx) return;
+    if (musicInterval) clearInterval(musicInterval);
+    const notes = [523,587,659,784,659,587,523,493,523,659,784,880,784,659];
+    let i = 0;
+    function tick() {
+      if (!musicOn) return;
+      const now = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = notes[i % notes.length];
+      g.gain.setValueAtTime(0.07, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+      o.connect(g); g.connect(musicGain);
+      o.start(); o.stop(now + 0.35);
+      i++;
+    }
+    musicInterval = setInterval(tick, 480);
+  }
+  function toggleMusic() {
+    musicOn = !musicOn;
+    document.getElementById('musicBtn').textContent = musicOn ? '🎵 Musique ON' : '🔇 Musique OFF';
+    if (musicOn) startMusic(); else { clearInterval(musicInterval); musicInterval = null; }
+  }
+  document.body.addEventListener('click', () => {
+    if (!audioCtx) { initAudio(); startMusic(); }
+  }, { once: true });
+
+  // fade-in à l'arrivée
+  document.body.style.opacity = '0';
+  document.body.style.transition = 'opacity 0.35s';
+  requestAnimationFrame(() => { document.body.style.opacity = '1'; });
+</script>
 </body>
 </html>

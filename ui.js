@@ -1,7 +1,4 @@
-// ui.js
-import { Storage } from './storage.js';
-
-export const UI = {
+const UI = {
   refreshHUD: () => {
     document.getElementById('level').innerText = Storage.getLevel();
     document.getElementById('xp').innerText = Storage.getXP();
@@ -11,7 +8,6 @@ export const UI = {
     
     const xp = Storage.getXP();
     const level = Storage.getLevel();
-    const xpForNext = level * 100;
     const xpInCurrent = xp % 100;
     const percent = (xpInCurrent / 100) * 100;
     document.getElementById('xpBarFill').style.width = `${percent}%`;

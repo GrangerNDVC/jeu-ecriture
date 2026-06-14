@@ -4,75 +4,496 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Les Archives des Mots</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, #0a0f2a, #030617);
+      min-height: 100vh;
+      color: #f5e9d3;
+      overflow-x: hidden;
+      position: relative;
+    }
+    .magic-dust {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: radial-gradient(circle at 20% 40%, rgba(255,215,130,0.25) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: floatDust 30s linear infinite;
+    }
+    @keyframes floatDust {
+      0% { background-position: 0 0; }
+      100% { background-position: 100px 100px; }
+    }
+    .glass-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(2px);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .main-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      position: relative;
+      z-index: 2;
+    }
+    .glass-panel {
+      background: rgba(20, 25, 55, 0.45);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 230, 170, 0.3);
+      box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4);
+    }
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 1rem 2rem;
+      margin-bottom: 1rem;
+    }
+    .hud-left .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #FFE6A3, #C7A46B);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .subtitle {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      font-style: italic;
+    }
+    .hud-right {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: rgba(0,0,0,0.45);
+      padding: 0.3rem 1rem;
+      border-radius: 3rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      backdrop-filter: blur(4px);
+    }
+    .icon {
+      margin-right: 0.3rem;
+    }
+    .xp-bar-container {
+      background: rgba(0,0,0,0.5);
+      border-radius: 2rem;
+      height: 0.6rem;
+      margin: 1rem 0 2rem;
+      overflow: hidden;
+    }
+    .xp-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #F3B33D, #FFD966);
+      border-radius: 2rem;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 8px #FFD966;
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2rem;
+    }
+    .game-card {
+      background: rgba(30, 35, 70, 0.5);
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
+      padding: 1.8rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      border: 1px solid rgba(255,220,150,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .game-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: #FFD966;
+      box-shadow: 0 0 25px rgba(255,217,102,0.5);
+    }
+    .card-glow {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,235,170,0.25), transparent);
+      transition: left 0.6s;
+    }
+    .game-card:hover .card-glow {
+      left: 100%;
+    }
+    .badge-game {
+      display: inline-block;
+      background: #C49A6C;
+      margin-top: 0.8rem;
+      padding: 0.2rem 1rem;
+      border-radius: 3rem;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: #1E1B2F;
+    }
+    .game-container {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .hidden {
+      display: none;
+    }
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: #FFE6A3;
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .close-btn:hover {
+      background: #b35900;
+      transform: scale(1.05);
+    }
+    .quiz-area {
+      text-align: center;
+      padding: 1rem;
+    }
+    .question-word {
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 1rem 0;
+      text-shadow: 0 0 8px #FFD966;
+      animation: pulseText 0.5s ease;
+    }
+    @keyframes pulseText {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .option-btn {
+      background: rgba(20,30,60,0.8);
+      border: 1px solid #BFA87A;
+      padding: 0.8rem 1.5rem;
+      border-radius: 3rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #FAF0D7;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-btn:hover:not(:disabled) {
+      background: #F0B27A;
+      color: #0E0B1A;
+      transform: scale(1.05);
+    }
+    .feedback {
+      margin-top: 1rem;
+      font-size: 1.3rem;
+      font-weight: bold;
+      padding: 0.5rem;
+      border-radius: 2rem;
+      background: rgba(0,0,0,0.4);
+    }
+    .next-btn {
+      background: #D4AF37;
+      border: none;
+      padding: 0.7rem 2rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .next-btn:hover {
+      background: #EBC44B;
+      transform: scale(1.02);
+    }
+    @media (max-width: 768px) {
+      .hud { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      .question-word { font-size: 2rem; }
+      .option-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      .games-grid { gap: 1rem; }
+    }
+  </style>
 </head>
 <body>
-  <div class="magic-dust"></div>
-  <div class="glass-overlay"></div>
+<div class="magic-dust"></div>
+<div class="glass-overlay"></div>
 
-  <main id="app" class="main-container">
-    <header class="hud glass-panel">
-      <div class="hud-left">
-        <h1 class="logo">📖 LES ARCHIVES DES MOTS</h1>
-        <p class="subtitle">Chaque texte cache un pouvoir.</p>
-      </div>
-      <div class="hud-right">
-        <div class="stat"><span class="icon">⭐</span> Niveau <span id="level">1</span></div>
-        <div class="stat"><span class="icon">✨</span> XP <span id="xp">0</span></div>
-        <div class="stat"><span class="icon">🔥</span> Combo <span id="combo">0</span></div>
-        <div class="stat"><span class="icon">⚡</span> Série <span id="streak">0</span></div>
-        <div class="stat"><span class="icon">🪙</span> Pièces <span id="coins">0</span></div>
-      </div>
-    </header>
-
-    <div class="xp-bar-container">
-      <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+<main id="app" class="main-container">
+  <header class="hud glass-panel">
+    <div class="hud-left">
+      <h1 class="logo">📖 LES ARCHIVES DES MOTS</h1>
+      <p class="subtitle">Chaque texte cache un pouvoir.</p>
     </div>
-
-    <section class="games-grid" id="gamesGrid">
-      <div class="game-card" data-game="lexicrush">
-        <div class="card-glow"></div>
-        <h2>🌲 Forêt Lexicale</h2>
-        <p>Synonymes & Antonymes</p>
-        <span class="badge-game">Lexic Rush</span>
-      </div>
-      <div class="game-card" data-game="syntax">
-        <div class="card-glow"></div>
-        <h2>📜 Bibliothèque Syntaxique</h2>
-        <p>Réparation de phrases</p>
-      </div>
-      <div class="game-card" data-game="ponctuation">
-        <div class="card-glow"></div>
-        <h2>🏛️ Temple de la Ponctuation</h2>
-        <p>Virgules, points...</p>
-      </div>
-      <div class="game-card" data-game="connecteurs">
-        <div class="card-glow"></div>
-        <h2>🗼 Tour des Connecteurs</h2>
-        <p>Logique & liaisons</p>
-      </div>
-      <div class="game-card" data-game="style">
-        <div class="card-glow"></div>
-        <h2>🖼️ Galerie du Style</h2>
-        <p>Figures de style</p>
-      </div>
-      <div class="game-card" data-game="temps">
-        <div class="card-glow"></div>
-        <h2>⏳ Atelier des Temps</h2>
-        <p>Conjugaison & réécriture</p>
-      </div>
-    </section>
-
-    <div id="gameContainer" class="game-container hidden glass-panel">
-      <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
-      <div id="gameInterface"></div>
+    <div class="hud-right">
+      <div class="stat"><span class="icon">⭐</span> Niveau <span id="level">1</span></div>
+      <div class="stat"><span class="icon">✨</span> XP <span id="xp">0</span></div>
+      <div class="stat"><span class="icon">🔥</span> Combo <span id="combo">0</span></div>
+      <div class="stat"><span class="icon">⚡</span> Série <span id="streak">0</span></div>
+      <div class="stat"><span class="icon">🪙</span> Pièces <span id="coins">0</span></div>
     </div>
-  </main>
+  </header>
 
-  <script src="storage.js"></script>
-  <script src="ui.js"></script>
-  <script src="games.js"></script>
-  <script src="app.js"></script>
+  <div class="xp-bar-container">
+    <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+  </div>
+
+  <section class="games-grid" id="gamesGrid">
+    <div class="game-card" data-game="lexicrush">
+      <div class="card-glow"></div>
+      <h2>🌲 Forêt Lexicale</h2>
+      <p>Synonymes & Antonymes</p>
+      <span class="badge-game">Lexic Rush</span>
+    </div>
+    <div class="game-card" data-game="syntax">
+      <div class="card-glow"></div>
+      <h2>📜 Bibliothèque Syntaxique</h2>
+      <p>Réparation de phrases</p>
+    </div>
+    <div class="game-card" data-game="ponctuation">
+      <div class="card-glow"></div>
+      <h2>🏛️ Temple de la Ponctuation</h2>
+      <p>Virgules, points...</p>
+    </div>
+    <div class="game-card" data-game="connecteurs">
+      <div class="card-glow"></div>
+      <h2>🗼 Tour des Connecteurs</h2>
+      <p>Logique & liaisons</p>
+    </div>
+    <div class="game-card" data-game="style">
+      <div class="card-glow"></div>
+      <h2>🖼️ Galerie du Style</h2>
+      <p>Figures de style</p>
+    </div>
+    <div class="game-card" data-game="temps">
+      <div class="card-glow"></div>
+      <h2>⏳ Atelier des Temps</h2>
+      <p>Conjugaison & réécriture</p>
+    </div>
+  </section>
+
+  <div id="gameContainer" class="game-container hidden glass-panel">
+    <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
+    <div id="gameInterface"></div>
+  </div>
+</main>
+
+<script>
+  // ---------- STORAGE ----------
+  const STORAGE_KEYS = {
+    XP: 'archives_xp',
+    LEVEL: 'archives_level',
+    COMBO: 'archives_combo',
+    STREAK: 'archives_streak',
+    COINS: 'archives_coins'
+  };
+
+  const Storage = {
+    getXP: () => parseInt(localStorage.getItem(STORAGE_KEYS.XP) || '0'),
+    setXP: (xp) => localStorage.setItem(STORAGE_KEYS.XP, xp),
+    getLevel: () => parseInt(localStorage.getItem(STORAGE_KEYS.LEVEL) || '1'),
+    setLevel: (lvl) => localStorage.setItem(STORAGE_KEYS.LEVEL, lvl),
+    getCombo: () => parseInt(localStorage.getItem(STORAGE_KEYS.COMBO) || '0'),
+    setCombo: (c) => localStorage.setItem(STORAGE_KEYS.COMBO, c),
+    getStreak: () => parseInt(localStorage.getItem(STORAGE_KEYS.STREAK) || '0'),
+    setStreak: (s) => localStorage.setItem(STORAGE_KEYS.STREAK, s),
+    getCoins: () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS) || '0'),
+    setCoins: (c) => localStorage.setItem(STORAGE_KEYS.COINS, c),
+    
+    addReward: (xpGain, coinsGain, comboInc = 1) => {
+      let xp = Storage.getXP();
+      let coins = Storage.getCoins();
+      let combo = Storage.getCombo() + comboInc;
+      let streak = Storage.getStreak() + 1;
+      xp += xpGain;
+      coins += coinsGain;
+      let newLevel = 1 + Math.floor(xp / 100);
+      Storage.setXP(xp);
+      Storage.setCoins(coins);
+      Storage.setCombo(combo);
+      Storage.setStreak(streak);
+      Storage.setLevel(newLevel);
+      return { xp, coins, combo, streak, level: newLevel };
+    },
+    resetCombo: () => Storage.setCombo(0)
+  };
+
+  // ---------- UI ----------
+  const UI = {
+    refreshHUD: () => {
+      document.getElementById('level').innerText = Storage.getLevel();
+      document.getElementById('xp').innerText = Storage.getXP();
+      document.getElementById('combo').innerText = Storage.getCombo();
+      document.getElementById('streak').innerText = Storage.getStreak();
+      document.getElementById('coins').innerText = Storage.getCoins();
+      const xp = Storage.getXP();
+      const xpInCurrent = xp % 100;
+      const percent = (xpInCurrent / 100) * 100;
+      document.getElementById('xpBarFill').style.width = `${percent}%`;
+    },
+    showGameContainer: (show) => {
+      const container = document.getElementById('gameContainer');
+      if(show) container.classList.remove('hidden');
+      else container.classList.add('hidden');
+    }
+  };
+
+  // ---------- JEUX (Lexic Rush) ----------
+  const Games = {
+    // Données mockées (à remplacer par fetch JSON / Supabase)
+    async loadGameData(category) {
+      if(category === 'lexicrush') {
+        return [
+          { question: "rapide", correct: "véloce", wrong: ["lent", "mou", "paresseux"] },
+          { question: "content", correct: "heureux", wrong: ["triste", "fâché", "sombre"] },
+          { question: "village", correct: "hameau", wrong: ["ville", "métropole", "cité"] },
+          { question: "parler", correct: "discuter", wrong: ["taire", "murmurer", "crier"] }
+        ];
+      }
+      return [];
+    },
+
+    async launchLexicRush(containerEl, onReward) {
+      const data = await this.loadGameData('lexicrush');
+      if(!data.length) {
+        containerEl.innerHTML = '<p>❌ Erreur : aucune donnée.</p>';
+        return;
+      }
+      let currentIndex = 0;
+      let canAnswer = true;
+
+      const renderQuestion = () => {
+        if(currentIndex >= data.length) {
+          containerEl.innerHTML = `<div class="quiz-area"><h2>✨ Parfait ! ✨</h2><p>Vous avez terminé la Forêt Lexicale.</p><button class="next-btn" id="exitLexicBtn">Retour aux Archives</button></div>`;
+          document.getElementById('exitLexicBtn')?.addEventListener('click', () => {
+            UI.showGameContainer(false);
+          });
+          return;
+        }
+        const q = data[currentIndex];
+        const options = [q.correct, ...q.wrong];
+        for(let i = options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]];
+        }
+        let html = `<div class="quiz-area">
+          <div class="question-word">${q.question}</div>
+          <div class="options" id="optionsContainer"></div>
+          <div id="feedback" class="feedback"></div>
+        </div>`;
+        containerEl.innerHTML = html;
+        const optsDiv = document.getElementById('optionsContainer');
+        options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.innerText = opt;
+          btn.classList.add('option-btn');
+          btn.onclick = () => {
+            if(!canAnswer) return;
+            canAnswer = false;
+            if(opt === q.correct) {
+              document.getElementById('feedback').innerHTML = '✅ Exact ! +10 XP, +5 pièces, combo +1';
+              if(onReward) onReward(10, 5, false);
+              setTimeout(() => {
+                currentIndex++;
+                canAnswer = true;
+                renderQuestion();
+              }, 1000);
+            } else {
+              document.getElementById('feedback').innerHTML = `❌ Non, la bonne réponse était “${q.correct}”. +0, combo perdu.`;
+              if(onReward) onReward(0, 0, true);
+              setTimeout(() => {
+                currentIndex++;
+                canAnswer = true;
+                renderQuestion();
+              }, 1500);
+            }
+          };
+          optsDiv.appendChild(btn);
+        });
+      };
+      renderQuestion();
+    }
+  };
+
+  // ---------- APPLICATION PRINCIPALE ----------
+  const App = {
+    init() {
+      UI.refreshHUD();
+      this.bindGameCards();
+      this.bindCloseGame();
+      console.log("Archives des Mots prêtes !");
+    },
+    bindGameCards() {
+      const cards = document.querySelectorAll('.game-card');
+      cards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          const gameType = card.dataset.game;
+          if(gameType === 'lexicrush') {
+            this.startLexicRush();
+          } else {
+            alert(`🔮 Le jeu “${card.querySelector('h2')?.innerText || gameType}” ouvrira bientôt ses portes.`);
+          }
+        });
+      });
+    },
+    startLexicRush() {
+      UI.showGameContainer(true);
+      const container = document.getElementById('gameInterface');
+      Games.launchLexicRush(container, (xpGain, coinGain, isFail) => {
+        if(isFail) {
+          Storage.resetCombo();
+        }
+        Storage.addReward(xpGain, coinGain, isFail ? 0 : 1);
+        UI.refreshHUD();
+        if(isFail && xpGain === 0) {
+          const comboElem = document.getElementById('combo');
+          comboElem.style.transform = 'scale(1.3)';
+          setTimeout(() => comboElem.style.transform = '', 300);
+        }
+      });
+    },
+    bindCloseGame() {
+      document.getElementById('closeGameBtn').addEventListener('click', () => {
+        UI.showGameContainer(false);
+      });
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
 </body>
 </html>

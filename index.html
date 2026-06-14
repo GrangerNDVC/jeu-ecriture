@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Les Archives des Mots</title>
+  <title>Archives des Mots - Lexic Rush Arcade</title>
   <style>
     * {
       margin: 0;
@@ -12,12 +12,11 @@
       user-select: none;
     }
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: radial-gradient(circle at 10% 20%, #0a0f2a, #030617);
       min-height: 100vh;
       color: #f5e9d3;
       overflow-x: hidden;
-      position: relative;
     }
     .magic-dust {
       position: fixed;
@@ -26,7 +25,7 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      background-image: radial-gradient(circle at 20% 40%, rgba(255,215,130,0.25) 1px, transparent 1px);
+      background-image: radial-gradient(circle at 20% 40%, rgba(255,215,130,0.2) 1px, transparent 1px);
       background-size: 40px 40px;
       animation: floatDust 30s linear infinite;
     }
@@ -34,15 +33,12 @@
       0% { background-position: 0 0; }
       100% { background-position: 100px 100px; }
     }
-    .glass-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      backdrop-filter: blur(2px);
-      pointer-events: none;
-      z-index: -1;
+    .glass-panel {
+      background: rgba(20, 25, 55, 0.45);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 230, 170, 0.3);
+      box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4);
     }
     .main-container {
       max-width: 1300px;
@@ -50,13 +46,6 @@
       padding: 1.5rem;
       position: relative;
       z-index: 2;
-    }
-    .glass-panel {
-      background: rgba(20, 25, 55, 0.45);
-      backdrop-filter: blur(12px);
-      border-radius: 2rem;
-      border: 1px solid rgba(255, 230, 170, 0.3);
-      box-shadow: 0 25px 40px -12px rgba(0,0,0,0.4);
     }
     .hud {
       display: flex;
@@ -66,7 +55,7 @@
       padding: 1rem 2rem;
       margin-bottom: 1rem;
     }
-    .hud-left .logo {
+    .logo {
       font-size: 1.5rem;
       font-weight: 700;
       background: linear-gradient(135deg, #FFE6A3, #C7A46B);
@@ -89,11 +78,6 @@
       padding: 0.3rem 1rem;
       border-radius: 3rem;
       font-weight: 600;
-      font-size: 0.9rem;
-      backdrop-filter: blur(4px);
-    }
-    .icon {
-      margin-right: 0.3rem;
     }
     .xp-bar-container {
       background: rgba(0,0,0,0.5);
@@ -106,9 +90,7 @@
       width: 0%;
       height: 100%;
       background: linear-gradient(90deg, #F3B33D, #FFD966);
-      border-radius: 2rem;
-      transition: width 0.4s ease;
-      box-shadow: 0 0 8px #FFD966;
+      transition: width 0.4s;
     }
     .games-grid {
       display: grid;
@@ -122,43 +104,25 @@
       padding: 1.8rem 1rem;
       text-align: center;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      transition: 0.3s;
       border: 1px solid rgba(255,220,150,0.4);
-      position: relative;
-      overflow: hidden;
     }
     .game-card:hover {
-      transform: translateY(-8px) scale(1.02);
+      transform: translateY(-8px);
       border-color: #FFD966;
-      box-shadow: 0 0 25px rgba(255,217,102,0.5);
-    }
-    .card-glow {
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,235,170,0.25), transparent);
-      transition: left 0.6s;
-    }
-    .game-card:hover .card-glow {
-      left: 100%;
+      box-shadow: 0 0 20px rgba(255,217,102,0.4);
     }
     .badge-game {
-      display: inline-block;
       background: #C49A6C;
-      margin-top: 0.8rem;
       padding: 0.2rem 1rem;
       border-radius: 3rem;
       font-size: 0.7rem;
-      font-weight: bold;
       color: #1E1B2F;
     }
     .game-container {
       margin-top: 2rem;
       padding: 1.5rem;
       position: relative;
-      transition: all 0.3s;
     }
     .hidden {
       display: none;
@@ -173,138 +137,115 @@
       padding: 0.3rem 1rem;
       border-radius: 2rem;
       cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s;
     }
-    .close-btn:hover {
-      background: #b35900;
-      transform: scale(1.05);
-    }
-    .quiz-area {
+    /* zone de jeu arcade */
+    .arcade-area {
       text-align: center;
-      padding: 1rem;
     }
-    .question-word {
+    .target-word {
       font-size: 3rem;
-      font-weight: 700;
-      margin: 1rem 0;
-      text-shadow: 0 0 8px #FFD966;
-      animation: pulseText 0.5s ease;
-    }
-    @keyframes pulseText {
-      0% { transform: scale(0.95); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .options {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    .option-btn {
-      background: rgba(20,30,60,0.8);
-      border: 1px solid #BFA87A;
-      padding: 0.8rem 1.5rem;
-      border-radius: 3rem;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #FAF0D7;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .option-btn:hover:not(:disabled) {
-      background: #F0B27A;
-      color: #0E0B1A;
-      transform: scale(1.05);
-    }
-    .feedback {
-      margin-top: 1rem;
-      font-size: 1.3rem;
       font-weight: bold;
-      padding: 0.5rem;
-      border-radius: 2rem;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 0.2rem 1.5rem;
+      border-radius: 3rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 15px gold;
     }
-    .next-btn {
+    .game-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1rem 0;
+      font-size: 1.3rem;
+    }
+    .game-canvas {
+      position: relative;
+      background: rgba(0,0,0,0.3);
+      border-radius: 2rem;
+      min-height: 400px;
+      overflow: hidden;
+      cursor: crosshair;
+      margin: 1rem 0;
+      border: 2px solid rgba(255,215,0,0.5);
+    }
+    .floating-word {
+      position: absolute;
+      background: rgba(30,40,80,0.9);
+      backdrop-filter: blur(4px);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #FFE6A3;
+      border: 1px solid #FFD966;
+      cursor: pointer;
+      transition: 0.05s linear;
+      white-space: nowrap;
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+    .floating-word:active {
+      transform: scale(0.95);
+    }
+    .timer-bar {
+      height: 10px;
+      background: #FFD966;
+      width: 100%;
+      border-radius: 5px;
+      transition: width 0.1s linear;
+    }
+    .feedback-shot {
+      position: fixed;
+      pointer-events: none;
+      font-size: 1.5rem;
+      font-weight: bold;
+      animation: fadeUp 0.5s ease-out;
+      z-index: 200;
+    }
+    @keyframes fadeUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-50px); }
+    }
+    button {
       background: #D4AF37;
       border: none;
-      padding: 0.7rem 2rem;
+      padding: 0.5rem 1.5rem;
       border-radius: 2rem;
       font-weight: bold;
-      font-size: 1rem;
-      margin-top: 1rem;
       cursor: pointer;
-      transition: 0.2s;
     }
-    .next-btn:hover {
-      background: #EBC44B;
-      transform: scale(1.02);
-    }
-    @media (max-width: 768px) {
-      .hud { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-      .question-word { font-size: 2rem; }
-      .option-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
-      .games-grid { gap: 1rem; }
+    @media (max-width: 700px) {
+      .floating-word { font-size: 0.9rem; padding: 0.3rem 0.8rem; }
+      .target-word { font-size: 2rem; }
     }
   </style>
 </head>
 <body>
 <div class="magic-dust"></div>
-<div class="glass-overlay"></div>
-
-<main id="app" class="main-container">
+<main class="main-container">
   <header class="hud glass-panel">
-    <div class="hud-left">
-      <h1 class="logo">📖 LES ARCHIVES DES MOTS</h1>
-      <p class="subtitle">Chaque texte cache un pouvoir.</p>
-    </div>
+    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Tirez sur les synonymes !</p></div>
     <div class="hud-right">
-      <div class="stat"><span class="icon">⭐</span> Niveau <span id="level">1</span></div>
-      <div class="stat"><span class="icon">✨</span> XP <span id="xp">0</span></div>
-      <div class="stat"><span class="icon">🔥</span> Combo <span id="combo">0</span></div>
-      <div class="stat"><span class="icon">⚡</span> Série <span id="streak">0</span></div>
-      <div class="stat"><span class="icon">🪙</span> Pièces <span id="coins">0</span></div>
+      <div class="stat">⭐ Niveau <span id="level">1</span></div>
+      <div class="stat">✨ XP <span id="xp">0</span></div>
+      <div class="stat">🔥 Combo <span id="combo">0</span></div>
+      <div class="stat">⚡ Série <span id="streak">0</span></div>
+      <div class="stat">🪙 Pièces <span id="coins">0</span></div>
     </div>
   </header>
+  <div class="xp-bar-container"><div class="xp-bar-fill" id="xpBarFill"></div></div>
 
-  <div class="xp-bar-container">
-    <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+  <div class="games-grid">
+    <div class="game-card" data-game="lexicrush_arcade">
+      <h2>🌲 LEXIC RUSH - ARCADE</h2>
+      <p>Tirez sur les synonymes !</p>
+      <span class="badge-game">Nouveau ! Temps limité</span>
+    </div>
+    <!-- autres cartes verrouillées -->
+    <div class="game-card"><h2>📜 Bibliothèque</h2><p>Bientôt</p></div>
+    <div class="game-card"><h2>🏛️ Ponctuation</h2><p>Bientôt</p></div>
   </div>
-
-  <section class="games-grid" id="gamesGrid">
-    <div class="game-card" data-game="lexicrush">
-      <div class="card-glow"></div>
-      <h2>🌲 Forêt Lexicale</h2>
-      <p>Synonymes & Antonymes</p>
-      <span class="badge-game">Lexic Rush</span>
-    </div>
-    <div class="game-card" data-game="syntax">
-      <div class="card-glow"></div>
-      <h2>📜 Bibliothèque Syntaxique</h2>
-      <p>Réparation de phrases</p>
-    </div>
-    <div class="game-card" data-game="ponctuation">
-      <div class="card-glow"></div>
-      <h2>🏛️ Temple de la Ponctuation</h2>
-      <p>Virgules, points...</p>
-    </div>
-    <div class="game-card" data-game="connecteurs">
-      <div class="card-glow"></div>
-      <h2>🗼 Tour des Connecteurs</h2>
-      <p>Logique & liaisons</p>
-    </div>
-    <div class="game-card" data-game="style">
-      <div class="card-glow"></div>
-      <h2>🖼️ Galerie du Style</h2>
-      <p>Figures de style</p>
-    </div>
-    <div class="game-card" data-game="temps">
-      <div class="card-glow"></div>
-      <h2>⏳ Atelier des Temps</h2>
-      <p>Conjugaison & réécriture</p>
-    </div>
-  </section>
 
   <div id="gameContainer" class="game-container hidden glass-panel">
     <button id="closeGameBtn" class="close-btn">✕ Fermer</button>
@@ -313,186 +254,266 @@
 </main>
 
 <script>
-  // ---------- STORAGE ----------
-  const STORAGE_KEYS = {
-    XP: 'archives_xp',
-    LEVEL: 'archives_level',
-    COMBO: 'archives_combo',
-    STREAK: 'archives_streak',
-    COINS: 'archives_coins'
-  };
-
+  // ---------- STORAGE (identique) ----------
+  const STORAGE_KEYS = { XP:'archives_xp', LEVEL:'archives_level', COMBO:'archives_combo', STREAK:'archives_streak', COINS:'archives_coins' };
   const Storage = {
-    getXP: () => parseInt(localStorage.getItem(STORAGE_KEYS.XP) || '0'),
-    setXP: (xp) => localStorage.setItem(STORAGE_KEYS.XP, xp),
-    getLevel: () => parseInt(localStorage.getItem(STORAGE_KEYS.LEVEL) || '1'),
-    setLevel: (lvl) => localStorage.setItem(STORAGE_KEYS.LEVEL, lvl),
-    getCombo: () => parseInt(localStorage.getItem(STORAGE_KEYS.COMBO) || '0'),
-    setCombo: (c) => localStorage.setItem(STORAGE_KEYS.COMBO, c),
-    getStreak: () => parseInt(localStorage.getItem(STORAGE_KEYS.STREAK) || '0'),
-    setStreak: (s) => localStorage.setItem(STORAGE_KEYS.STREAK, s),
-    getCoins: () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS) || '0'),
-    setCoins: (c) => localStorage.setItem(STORAGE_KEYS.COINS, c),
-    
-    addReward: (xpGain, coinsGain, comboInc = 1) => {
-      let xp = Storage.getXP();
-      let coins = Storage.getCoins();
-      let combo = Storage.getCombo() + comboInc;
-      let streak = Storage.getStreak() + 1;
-      xp += xpGain;
-      coins += coinsGain;
-      let newLevel = 1 + Math.floor(xp / 100);
-      Storage.setXP(xp);
-      Storage.setCoins(coins);
-      Storage.setCombo(combo);
-      Storage.setStreak(streak);
-      Storage.setLevel(newLevel);
-      return { xp, coins, combo, streak, level: newLevel };
+    getXP:()=>parseInt(localStorage.getItem(STORAGE_KEYS.XP)||'0'),
+    setXP:(x)=>localStorage.setItem(STORAGE_KEYS.XP,x),
+    getLevel:()=>parseInt(localStorage.getItem(STORAGE_KEYS.LEVEL)||'1'),
+    setLevel:(l)=>localStorage.setItem(STORAGE_KEYS.LEVEL,l),
+    getCombo:()=>parseInt(localStorage.getItem(STORAGE_KEYS.COMBO)||'0'),
+    setCombo:(c)=>localStorage.setItem(STORAGE_KEYS.COMBO,c),
+    getStreak:()=>parseInt(localStorage.getItem(STORAGE_KEYS.STREAK)||'0'),
+    setStreak:(s)=>localStorage.setItem(STORAGE_KEYS.STREAK,s),
+    getCoins:()=>parseInt(localStorage.getItem(STORAGE_KEYS.COINS)||'0'),
+    setCoins:(c)=>localStorage.setItem(STORAGE_KEYS.COINS,c),
+    addReward:(xpGain, coinGain, comboInc=1)=>{
+      let xp=Storage.getXP()+xpGain, coins=Storage.getCoins()+coinGain, combo=Storage.getCombo()+comboInc, streak=Storage.getStreak()+1;
+      let newLevel=1+Math.floor(xp/100);
+      Storage.setXP(xp); Storage.setCoins(coins); Storage.setCombo(combo); Storage.setStreak(streak); Storage.setLevel(newLevel);
+      return {xp,coins,combo,streak,level:newLevel};
     },
-    resetCombo: () => Storage.setCombo(0)
+    resetCombo:()=>Storage.setCombo(0)
   };
+  function refreshHUD(){
+    document.getElementById('level').innerText=Storage.getLevel();
+    document.getElementById('xp').innerText=Storage.getXP();
+    document.getElementById('combo').innerText=Storage.getCombo();
+    document.getElementById('streak').innerText=Storage.getStreak();
+    document.getElementById('coins').innerText=Storage.getCoins();
+    let xp=Storage.getXP();
+    document.getElementById('xpBarFill').style.width = `${xp%100}%`;
+  }
+  function showGameContainer(show){ document.getElementById('gameContainer').classList.toggle('hidden',!show); }
 
-  // ---------- UI ----------
-  const UI = {
-    refreshHUD: () => {
-      document.getElementById('level').innerText = Storage.getLevel();
-      document.getElementById('xp').innerText = Storage.getXP();
-      document.getElementById('combo').innerText = Storage.getCombo();
-      document.getElementById('streak').innerText = Storage.getStreak();
-      document.getElementById('coins').innerText = Storage.getCoins();
-      const xp = Storage.getXP();
-      const xpInCurrent = xp % 100;
-      const percent = (xpInCurrent / 100) * 100;
-      document.getElementById('xpBarFill').style.width = `${percent}%`;
+  // ---------- JEU ARCADE ----------
+  const LexicRushArcade = {
+    // Base de données (synonymes)
+    wordBank: [
+      { target:"rapide", synonyms:["véloce","vif","prompt"] },
+      { target:"content", synonyms:["heureux","satisfait","joyeux"] },
+      { target:"petit", synonyms:["minuscule","miniature","menu"] },
+      { target:"parler", synonyms:["discuter","bavarder","converser"] },
+      { target:"beau", synonyms:["magnifique","splendide","joli"] }
+    ],
+    currentRound: null,
+    activeWords: [],
+    intervalId: null,
+    timerInterval: null,
+    timeLeft: 12,
+    score: 0,
+    combo: 0,
+    gameActive: false,
+    canvasElem: null,
+    targetElem: null,
+    statsElem: null,
+
+    async launch(containerEl, onReward){
+      this.container = containerEl;
+      this.onReward = onReward;
+      this.initRound();
+      this.renderUI();
+      this.startGameLoop();
     },
-    showGameContainer: (show) => {
-      const container = document.getElementById('gameContainer');
-      if(show) container.classList.remove('hidden');
-      else container.classList.add('hidden');
-    }
-  };
-
-  // ---------- JEUX (Lexic Rush) ----------
-  const Games = {
-    // Données mockées (à remplacer par fetch JSON / Supabase)
-    async loadGameData(category) {
-      if(category === 'lexicrush') {
-        return [
-          { question: "rapide", correct: "véloce", wrong: ["lent", "mou", "paresseux"] },
-          { question: "content", correct: "heureux", wrong: ["triste", "fâché", "sombre"] },
-          { question: "village", correct: "hameau", wrong: ["ville", "métropole", "cité"] },
-          { question: "parler", correct: "discuter", wrong: ["taire", "murmurer", "crier"] }
-        ];
-      }
-      return [];
+    initRound(){
+      // choisir un mot cible aléatoire
+      const idx = Math.floor(Math.random() * this.wordBank.length);
+      this.currentRound = { ...this.wordBank[idx] };
+      this.score = 0;
+      this.combo = 0;
+      this.timeLeft = 14; // secondes
+      this.activeWords = [];
     },
-
-    async launchLexicRush(containerEl, onReward) {
-      const data = await this.loadGameData('lexicrush');
-      if(!data.length) {
-        containerEl.innerHTML = '<p>❌ Erreur : aucune donnée.</p>';
-        return;
+    renderUI(){
+      this.container.innerHTML = `
+        <div class="arcade-area">
+          <div class="target-word">🎯 ${this.currentRound.target}</div>
+          <div class="game-stats">
+            <span>💥 Score: <span id="arcadeScore">0</span></span>
+            <span>🔥 Combo: <span id="arcadeCombo">0</span></span>
+            <span>⏱️ Temps: <span id="arcadeTimer">${this.timeLeft}</span></span>
+          </div>
+          <div class="timer-bar" id="timerBar" style="width:100%"></div>
+          <div class="game-canvas" id="gameCanvas" style="height:450px; position:relative;"></div>
+          <button id="resetArcadeBtn">🔄 Nouvelle partie</button>
+        </div>
+      `;
+      this.canvasElem = document.getElementById('gameCanvas');
+      this.updateStatsUI();
+      document.getElementById('resetArcadeBtn').onclick = () => { this.stopGame(); this.initRound(); this.startGameLoop(); };
+      this.startTimer();
+    },
+    updateStatsUI(){
+      if(document.getElementById('arcadeScore')) document.getElementById('arcadeScore').innerText = this.score;
+      if(document.getElementById('arcadeCombo')) document.getElementById('arcadeCombo').innerText = this.combo;
+      if(document.getElementById('arcadeTimer')) document.getElementById('arcadeTimer').innerText = Math.ceil(this.timeLeft);
+      const percent = (this.timeLeft / 14) * 100;
+      const bar = document.getElementById('timerBar');
+      if(bar) bar.style.width = `${Math.max(0,percent)}%`;
+    },
+    startTimer(){
+      if(this.timerInterval) clearInterval(this.timerInterval);
+      this.timerInterval = setInterval(() => {
+        if(!this.gameActive) return;
+        if(this.timeLeft <= 0.1) {
+          this.endGame(false);
+        } else {
+          this.timeLeft -= 0.1;
+          this.updateStatsUI();
+        }
+      }, 100);
+    },
+    startGameLoop(){
+      this.gameActive = true;
+      if(this.intervalId) clearInterval(this.intervalId);
+      this.intervalId = setInterval(() => {
+        if(!this.gameActive) return;
+        this.spawnWord();
+        this.moveWords();
+      }, 800);
+      // petite première vague
+      for(let i=0;i<3;i++) setTimeout(()=>this.spawnWord(), i*200);
+    },
+    spawnWord(){
+      if(!this.gameActive) return;
+      const isSynonym = Math.random() < 0.45; // 45% de chances d'être un synonyme
+      let wordText;
+      if(isSynonym){
+        const syns = this.currentRound.synonyms;
+        wordText = syns[Math.floor(Math.random() * syns.length)];
+      } else {
+        // leurres : mots hors synonymes (piocher dans d'autres catégories)
+        const otherWords = ["lent","triste","énorme","silence","laid","moche","grand","courir"];
+        wordText = otherWords[Math.floor(Math.random() * otherWords.length)];
       }
-      let currentIndex = 0;
-      let canAnswer = true;
-
-      const renderQuestion = () => {
-        if(currentIndex >= data.length) {
-          containerEl.innerHTML = `<div class="quiz-area"><h2>✨ Parfait ! ✨</h2><p>Vous avez terminé la Forêt Lexicale.</p><button class="next-btn" id="exitLexicBtn">Retour aux Archives</button></div>`;
-          document.getElementById('exitLexicBtn')?.addEventListener('click', () => {
-            UI.showGameContainer(false);
-          });
-          return;
-        }
-        const q = data[currentIndex];
-        const options = [q.correct, ...q.wrong];
-        for(let i = options.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [options[i], options[j]] = [options[j], options[i]];
-        }
-        let html = `<div class="quiz-area">
-          <div class="question-word">${q.question}</div>
-          <div class="options" id="optionsContainer"></div>
-          <div id="feedback" class="feedback"></div>
-        </div>`;
-        containerEl.innerHTML = html;
-        const optsDiv = document.getElementById('optionsContainer');
-        options.forEach(opt => {
-          const btn = document.createElement('button');
-          btn.innerText = opt;
-          btn.classList.add('option-btn');
-          btn.onclick = () => {
-            if(!canAnswer) return;
-            canAnswer = false;
-            if(opt === q.correct) {
-              document.getElementById('feedback').innerHTML = '✅ Exact ! +10 XP, +5 pièces, combo +1';
-              if(onReward) onReward(10, 5, false);
-              setTimeout(() => {
-                currentIndex++;
-                canAnswer = true;
-                renderQuestion();
-              }, 1000);
-            } else {
-              document.getElementById('feedback').innerHTML = `❌ Non, la bonne réponse était “${q.correct}”. +0, combo perdu.`;
-              if(onReward) onReward(0, 0, true);
-              setTimeout(() => {
-                currentIndex++;
-                canAnswer = true;
-                renderQuestion();
-              }, 1500);
-            }
-          };
-          optsDiv.appendChild(btn);
-        });
+      const leftPos = Math.random() * (this.canvasElem.clientWidth - 100);
+      const topPos = -40;
+      const wordDiv = document.createElement('div');
+      wordDiv.className = 'floating-word';
+      wordDiv.innerText = wordText;
+      wordDiv.style.left = `${leftPos}px`;
+      wordDiv.style.top = `${topPos}px`;
+      wordDiv.dataset.isSynonym = isSynonym ? "true" : "false";
+      wordDiv.onclick = (e) => {
+        e.stopPropagation();
+        this.shootWord(wordDiv, isSynonym);
       };
-      renderQuestion();
+      this.canvasElem.appendChild(wordDiv);
+      this.activeWords.push({ element: wordDiv, top: topPos, speed: 1.2 + Math.random()*1.5, isSynonym });
+    },
+    moveWords(){
+      if(!this.gameActive) return;
+      for(let i=0; i<this.activeWords.length; i++){
+        const w = this.activeWords[i];
+        w.top += w.speed;
+        w.element.style.top = `${w.top}px`;
+        if(w.top > this.canvasElem.clientHeight + 50){
+          w.element.remove();
+          this.activeWords.splice(i,1);
+          i--;
+        }
+      }
+      requestAnimationFrame(() => this.moveWords()); // boucle continue
+    },
+    shootWord(element, isSynonym){
+      if(!this.gameActive) return;
+      const correct = (isSynonym === true);
+      if(correct){
+        // BON TIR
+        let points = 10 + Math.floor(this.combo * 2);
+        this.score += points;
+        this.combo++;
+        this.addFeedbackEffect(element, `+${points}`, '#8BC34A');
+        // Récompense instantanée (XP, pièces)
+        if(this.onReward) this.onReward(5, 2, false); // +5xp, +2 pièces par tir réussi
+        refreshHUD();
+      } else {
+        // MAUVAIS TIR
+        this.combo = 0;
+        this.addFeedbackEffect(element, 'Mauvais !', '#E57373');
+        if(this.onReward) this.onReward(0,0,true); // reset combo global
+        refreshHUD();
+      }
+      // Supprimer la bulle touchée
+      const index = this.activeWords.findIndex(w => w.element === element);
+      if(index !== -1){
+        this.activeWords[index].element.remove();
+        this.activeWords.splice(index,1);
+      }
+      this.updateStatsUI();
+      // Vérifier si le score atteint un seuil de victoire (par exemple 100 points)
+      if(this.score >= 80){
+        this.endGame(true);
+      }
+    },
+    addFeedbackEffect(element, text, color){
+      const rect = element.getBoundingClientRect();
+      const feedback = document.createElement('div');
+      feedback.className = 'feedback-shot';
+      feedback.innerText = text;
+      feedback.style.color = color;
+      feedback.style.left = `${rect.left + rect.width/2}px`;
+      feedback.style.top = `${rect.top}px`;
+      feedback.style.position = 'fixed';
+      document.body.appendChild(feedback);
+      setTimeout(()=>feedback.remove(), 500);
+    },
+    endGame(isVictory){
+      this.gameActive = false;
+      clearInterval(this.intervalId);
+      clearInterval(this.timerInterval);
+      // Supprimer toutes les bulles
+      for(let w of this.activeWords) w.element.remove();
+      this.activeWords = [];
+      let message = isVictory ? "✨ VICTOIRE ! Vous avez dépassé 80 points ✨" : "⏰ Temps écoulé... Réessayez !";
+      let bonusXP = 0, bonusCoins = 0;
+      if(isVictory){
+        bonusXP = 50;
+        bonusCoins = 20;
+        if(this.onReward) this.onReward(bonusXP, bonusCoins, false);
+        refreshHUD();
+      }
+      this.container.innerHTML += `<div style="text-align:center; margin-top:1rem;"><p>${message}</p><p>Score final : ${this.score}</p><button id="playAgainBtn">🔫 Rejouer</button></div>`;
+      document.getElementById('playAgainBtn')?.addEventListener('click',()=>{
+        this.initRound();
+        this.startGameLoop();
+        this.renderUI();
+      });
+    },
+    stopGame(){
+      this.gameActive = false;
+      if(this.intervalId) clearInterval(this.intervalId);
+      if(this.timerInterval) clearInterval(this.timerInterval);
+      for(let w of this.activeWords) w.element.remove();
+      this.activeWords = [];
     }
   };
 
-  // ---------- APPLICATION PRINCIPALE ----------
+  // ---------- APPLICATION ----------
   const App = {
-    init() {
-      UI.refreshHUD();
-      this.bindGameCards();
-      this.bindCloseGame();
-      console.log("Archives des Mots prêtes !");
+    init(){
+      refreshHUD();
+      this.bindCards();
+      document.getElementById('closeGameBtn').onclick = () => showGameContainer(false);
     },
-    bindGameCards() {
-      const cards = document.querySelectorAll('.game-card');
-      cards.forEach(card => {
-        card.addEventListener('click', (e) => {
-          const gameType = card.dataset.game;
-          if(gameType === 'lexicrush') {
-            this.startLexicRush();
-          } else {
-            alert(`🔮 Le jeu “${card.querySelector('h2')?.innerText || gameType}” ouvrira bientôt ses portes.`);
-          }
+    bindCards(){
+      document.querySelectorAll('.game-card').forEach(card => {
+        card.addEventListener('click', () => {
+          if(card.dataset.game === 'lexicrush_arcade') this.startArcade();
+          else alert("🔮 Autres jeux à venir bientôt !");
         });
       });
     },
-    startLexicRush() {
-      UI.showGameContainer(true);
+    startArcade(){
+      showGameContainer(true);
       const container = document.getElementById('gameInterface');
-      Games.launchLexicRush(container, (xpGain, coinGain, isFail) => {
-        if(isFail) {
-          Storage.resetCombo();
-        }
+      LexicRushArcade.launch(container, (xpGain, coinGain, isFail) => {
+        if(isFail) Storage.resetCombo();
         Storage.addReward(xpGain, coinGain, isFail ? 0 : 1);
-        UI.refreshHUD();
-        if(isFail && xpGain === 0) {
-          const comboElem = document.getElementById('combo');
-          comboElem.style.transform = 'scale(1.3)';
-          setTimeout(() => comboElem.style.transform = '', 300);
-        }
-      });
-    },
-    bindCloseGame() {
-      document.getElementById('closeGameBtn').addEventListener('click', () => {
-        UI.showGameContainer(false);
+        refreshHUD();
       });
     }
   };
-
   document.addEventListener('DOMContentLoaded', () => App.init());
 </script>
 </body>

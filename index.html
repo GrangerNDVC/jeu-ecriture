@@ -14,28 +14,32 @@
     }
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: radial-gradient(circle at 10% 20%, #0a0f2a, #030617);
+      background: radial-gradient(circle at 20% 30%, #0a0f2a, #020617);
       min-height: 100vh;
       color: #f5e9d3;
       overflow-x: hidden;
+      position: relative;
     }
-    .magic-dust {
+    /* décor animé : bibliothèque magique */
+    .magic-bg {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      background-image: radial-gradient(circle at 20% 40%, rgba(255,215,130,0.2) 1px, transparent 1px);
-      background-size: 40px 40px;
-      animation: floatDust 30s linear infinite;
+      z-index: 0;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,215,130,0.15)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></radialGradient></defs><rect width="800" height="600" fill="none"/><circle cx="200" cy="150" r="180" fill="url(%23glow)"/><circle cx="600" cy="400" r="250" fill="url(%23glow)"/><path d="M0 500 L800 450 L800 600 L0 600 Z" fill="rgba(30,20,50,0.3)"/><text x="50" y="550" font-size="80" fill="rgba(255,230,170,0.08)" font-family="Georgia">📖</text></svg>');
+      background-repeat: no-repeat;
+      background-size: cover;
+      animation: floatBooks 20s infinite alternate;
     }
-    @keyframes floatDust {
-      0% { background-position: 0 0; }
-      100% { background-position: 100px 100px; }
+    @keyframes floatBooks {
+      0% { transform: translateY(0px) scale(1); opacity: 0.6; }
+      100% { transform: translateY(-20px) scale(1.05); opacity: 0.9; }
     }
     .glass-panel {
-      background: rgba(20, 25, 55, 0.5);
+      background: rgba(20, 25, 55, 0.45);
       backdrop-filter: blur(12px);
       border-radius: 2rem;
       border: 1px solid rgba(255, 230, 170, 0.3);
@@ -228,18 +232,52 @@
       margin-top: 0.5rem;
       font-size: 0.9rem;
     }
+    .zoom-transition {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 3rem;
+      font-weight: bold;
+      background: rgba(0,0,0,0.8);
+      padding: 1rem 2rem;
+      border-radius: 3rem;
+      color: #FFD966;
+      white-space: nowrap;
+      z-index: 1000;
+      animation: zoomFade 0.8s forwards;
+      pointer-events: none;
+    }
+    @keyframes zoomFade {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; visibility: hidden; }
+    }
+    /* toggle musique */
+    .music-btn {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.6);
+      border-radius: 2rem;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+      z-index: 100;
+      cursor: pointer;
+    }
     @media (max-width: 700px) {
       .sentence { font-size: 0.9rem; }
       .bubble { font-size: 0.7rem; padding: 0.3rem 0.7rem; white-space: normal; }
       .game-canvas { min-height: 320px; }
+      .zoom-transition { font-size: 1.8rem; white-space: normal; width: 80%; text-align: center; }
     }
   </style>
 </head>
 <body>
-<div class="magic-dust"></div>
+<div class="magic-bg"></div>
 <main class="main-container">
   <header class="hud glass-panel">
-    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Lexic Rush - Trouvez les bons mots !</p></div>
+    <div><h1 class="logo">📖 ARCHIVES DES MOTS</h1><p class="subtitle">Lexic Rush - Points bonus pour les mots rares !</p></div>
     <div class="hud-right">
       <div class="stat">⭐ Niv <span id="level">1</span></div>
       <div class="stat">✨ XP <span id="xp">0</span></div>
@@ -254,7 +292,7 @@
     <div class="game-card" data-game="lexicrush_evolved">
       <h2>🔫 LEXIC RUSH ÉVOLUÉ</h2>
       <p>Phrases, consignes variées, 10 manches</p>
-      <span class="badge-game" style="background:#C49A6C;">Nouveau !</span>
+      <span class="badge-game" style="background:#C49A6C;">+ Points rares</span>
     </div>
     <div class="game-card" style="opacity:0.5;">
       <h2>📜 Autres jeux</h2>
@@ -267,6 +305,7 @@
     <div id="gameInterface"></div>
   </div>
 </main>
+<div id="musicToggle" class="music-btn">🎵 Musique ON</div>
 
 <script>
   // --------------------------------------------------------------
@@ -304,64 +343,162 @@
   function showGameContainer(show){ document.getElementById('gameContainer').classList.toggle('hidden',!show); }
 
   // --------------------------------------------------------------
-  // 2. BASE DE DONNÉES (50+ entrées avec phrases, consignes variées)
+  // 2. AUDIO (Web Audio - musique dynamique et bruitages)
   // --------------------------------------------------------------
-  const questionBank = [
-    { sentence: "Il court très rapidement.", highlight: "rapidement", type: "synonymes", corrects: ["vite","vivement"], wrongs: ["lentement","doucement","paresseusement"] },
-    { sentence: "Elle est vraiment contente aujourd'hui.", highlight: "contente", type: "synonymes", corrects: ["heureuse","satisfaite","ra vie"], wrongs: ["triste","fâchée","déçue"] },
-    { sentence: "Ce garçon est très beau.", highlight: "beau", type: "synonymes", corrects: ["magnifique","splendide","joli"], wrongs: ["laid","moche","hideux"] },
-    { sentence: "Il a un petit chien.", highlight: "petit", type: "synonymes", corrects: ["minuscule","miniature","menu"], wrongs: ["grand","énorme","gigantesque"] },
-    { sentence: "Elle parle beaucoup en classe.", highlight: "parle", type: "synonymes", corrects: ["discute","bavarde","converse"], wrongs: ["se tait","murmure","crie"] },
-    { sentence: "C'est un garçon fort.", highlight: "fort", type: "synonymes", corrects: ["puissant","solide","vigoureux"], wrongs: ["faible","fragile","délicat"] },
-    { sentence: "Il a fait une grosse erreur.", highlight: "grosse", type: "synonymes", corrects: ["grande","énorme","importante"], wrongs: ["petite","minuscule","insignifiante"] },
-    { sentence: "Elle a une jolie voix.", highlight: "jolie", type: "synonymes", corrects: ["belle","agréable","mélodieuse"], wrongs: ["laide","désagréable","criarde"] },
-    { sentence: "Il est très intelligent.", highlight: "intelligent", type: "synonymes", corrects: ["malin","brillant","astucieux"], wrongs: ["bête","stupide","idiot"] },
-    { sentence: "Cet exercice est facile.", highlight: "facile", type: "synonymes", corrects: ["simple","aisé","élémentaire"], wrongs: ["difficile","compliqué","ardu"] },
-    { sentence: "Il a un air triste.", highlight: "triste", type: "synonymes", corrects: ["morose","désolé","affligé"], wrongs: ["joyeux","heureux","gai"] },
-    { sentence: "Cette histoire est étrange.", highlight: "étrange", type: "synonymes", corrects: ["bizarre","curieux","inexpliqué"], wrongs: ["normal","commun","ordinaire"] },
-    // Antonymes
-    { sentence: "Il n'est jamais en retard.", highlight: "retard", type: "antonymes", corrects: ["avance","ponctualité"], wrongs: ["lenteur","absence"] },
-    { sentence: "La pièce est sombre.", highlight: "sombre", type: "antonymes", corrects: ["clair","lumineux","éclatant"], wrongs: ["obscur","noir"] },
-    { sentence: "Il a perdu ses clés.", highlight: "perdu", type: "antonymes", corrects: ["trouvé","retrouvé"], wrongs: ["égaré","caché"] },
-    { sentence: "Le début du film est long.", highlight: "début", type: "antonymes", corrects: ["fin","conclusion"], wrongs: ["milieu","préambule"] },
-    // Mots de la même famille
-    { sentence: "Il aime la nature.", highlight: "nature", type: "famille", corrects: ["naturel","naturaliste","naturellement"], wrongs: ["artificiel","culture"] },
-    { sentence: "Elle pratique la natation.", highlight: "natation", type: "famille", corrects: ["nager","nageur","nageoire"], wrongs: ["courir","sauter"] },
-    { sentence: "Le soleil brille.", highlight: "soleil", type: "famille", corrects: ["solaire","ensoleillé","soleillement"], wrongs: ["lune","étoile"] },
-    // Champ lexical (thème)
-    { sentence: "La forêt est profonde.", highlight: "forêt", type: "champ lexical", corrects: ["arbre","feuille","branche","sous-bois"], wrongs: ["océan","désert","montagne"] },
-    { sentence: "Le pirate cherche un trésor.", highlight: "pirate", type: "champ lexical", corrects: ["bateau","épée","carte","île"], wrongs: ["avion","voiture","train"] },
-  ];
-  // Dupliquer et enrichir pour atteindre 50+ questions (on va générer des variantes)
-  const extendedBank = [...questionBank];
-  const commonWords = [
-    { sentence: "Il est très gentil.", highlight: "gentil", type: "synonymes", corrects: ["aimable","sympathique","bienveillant"], wrongs: ["méchant","désagréable"] },
-    { sentence: "Elle a une belle maison.", highlight: "belle", type: "synonymes", corrects: ["magnifique","superbe","splendide"], wrongs: ["laide","moche"] },
-    { sentence: "Il dit toujours la vérité.", highlight: "dit", type: "synonymes", corrects: ["déclare","affirme","exprime"], wrongs: ["ment","cache"] },
-    { sentence: "Elle fait ses devoirs.", highlight: "fait", type: "synonymes", corrects: ["réalise","accomplit","effectue"], wrongs: ["défait","rate"] },
-    { sentence: "Il a une voiture rapide.", highlight: "rapide", type: "synonymes", corrects: ["véloce","vif","prompt"], wrongs: ["lent","paresseux"] },
-    { sentence: "Le professeur est sévère.", highlight: "sévère", type: "antonymes", corrects: ["doux","clément","indulgent"], wrongs: ["dur","strict"] },
-    { sentence: "Le chemin est étroit.", highlight: "étroit", type: "antonymes", corrects: ["large","spacieux"], wrongs: ["serré","resserré"] },
-    { sentence: "La mer est calme.", highlight: "calme", type: "synonymes", corrects: ["paisible","tranquille","serein"], wrongs: ["agité","orageux"] },
-    { sentence: "Il a un grand pouvoir.", highlight: "pouvoir", type: "famille", corrects: ["puissant","puissance","impuissant"], wrongs: ["faible","autorité"] },
-    { sentence: "Elle lit un livre.", highlight: "livre", type: "champ lexical", corrects: ["page","chapitre","bibliothèque","roman"], wrongs: ["télévision","ordinateur"] },
-  ];
-  extendedBank.push(...commonWords);
-  // Ajouter encore pour arriver à 50
-  for(let i=0; i<20; i++) {
-    extendedBank.push({ ...extendedBank[i%extendedBank.length], highlight: extendedBank[i%extendedBank.length].highlight + " variante" });
+  let audioCtx = null;
+  let musicGain = null;
+  let musicInterval = null;
+  let musicEnabled = true;
+
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = 0.3;
+    musicGain.connect(audioCtx.destination);
   }
-  const FINAL_BANK = extendedBank.slice(0, 55); // au moins 55
+
+  function playSound(type) {
+    if (!audioCtx) initAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    switch(type) {
+      case 'success':
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
+        osc.start();
+        osc.stop(now+0.3);
+        break;
+      case 'fail':
+        osc.frequency.value = 440;
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now+0.6);
+        osc.start();
+        osc.stop(now+0.4);
+        break;
+      case 'roundwin':
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.frequency.value = 660;
+        gain2.gain.setValueAtTime(0.25, now);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.8);
+        osc2.start();
+        osc2.stop(now+0.7);
+        setTimeout(()=>{ const o=audioCtx.createOscillator(); o.connect(audioCtx.destination); o.frequency.value=880; o.start(); o.stop(now+0.9); }, 400);
+        break;
+      case 'victory':
+        for(let i=0;i<3;i++){
+          setTimeout(()=>{
+            const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.frequency.value=523+ i*200;
+            g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.5);
+            o.start(); o.stop(audioCtx.currentTime+0.4);
+          }, i*200);
+        }
+        break;
+    }
+  }
+
+  function startBackgroundMusic() {
+    if (!musicEnabled) return;
+    if (musicInterval) clearInterval(musicInterval);
+    if (!audioCtx) initAudio();
+    if (!audioCtx) return;
+    // Petite mélodie classique rythmée (style Vivaldi / baroque)
+    const notes = [523, 587, 659, 523, 440, 493, 523, 587, 659, 698, 784, 659, 587, 523];
+    let idx = 0;
+    function playNote() {
+      if (!musicEnabled) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(musicGain);
+      osc.frequency.value = notes[idx % notes.length];
+      gainNode.gain.setValueAtTime(0.08, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now+0.35);
+      osc.start();
+      osc.stop(now+0.3);
+      idx++;
+    }
+    musicInterval = setInterval(playNote, 380);
+  }
+
+  function stopBackgroundMusic() {
+    if (musicInterval) clearInterval(musicInterval);
+    musicInterval = null;
+  }
+
+  function toggleMusic() {
+    musicEnabled = !musicEnabled;
+    const btn = document.getElementById('musicToggle');
+    if (musicEnabled) {
+      startBackgroundMusic();
+      btn.innerHTML = "🎵 Musique ON";
+    } else {
+      stopBackgroundMusic();
+      btn.innerHTML = "🔇 Musique OFF";
+    }
+  }
 
   // --------------------------------------------------------------
-  // 3. JEU PRINCIPAL (manches, bulles, consignes variables)
+  // 3. BASE DE DONNÉES (avec points variables)
+  //    plus le mot est rare, plus il rapporte de points
+  // --------------------------------------------------------------
+  const questionBank = [
+    { sentence: "Il court très rapidement.", highlight: "rapidement", type: "synonymes", corrects: ["vite","vivement"], wrongs: ["lentement","doucement"], rareBonus: [0,5] }, // "vivement" +5pts
+    { sentence: "Elle est vraiment contente aujourd'hui.", highlight: "contente", type: "synonymes", corrects: ["heureuse","satisfaite","ravie"], wrongs: ["triste","fâchée"], rareBonus: [0,0,8] },
+    { sentence: "Ce garçon est très beau.", highlight: "beau", type: "synonymes", corrects: ["magnifique","splendide","joli"], wrongs: ["laid","moche"], rareBonus: [5,8,0] },
+    { sentence: "Il a un petit chien.", highlight: "petit", type: "synonymes", corrects: ["minuscule","miniature","menu"], wrongs: ["grand","énorme"], rareBonus: [5,6,10] },
+    { sentence: "Elle parle beaucoup en classe.", highlight: "parle", type: "synonymes", corrects: ["discute","bavarde","converse"], wrongs: ["se tait","murmure"], rareBonus: [0,6,10] },
+    { sentence: "C'est un garçon fort.", highlight: "fort", type: "synonymes", corrects: ["puissant","solide","vigoureux"], wrongs: ["faible","fragile"], rareBonus: [5,0,10] },
+    { sentence: "Il a fait une grosse erreur.", highlight: "grosse", type: "synonymes", corrects: ["grande","énorme","importante"], wrongs: ["petite","minuscule"], rareBonus: [0,8,4] },
+    { sentence: "Elle a une jolie voix.", highlight: "jolie", type: "synonymes", corrects: ["belle","agréable","mélodieuse"], wrongs: ["laide","désagréable"], rareBonus: [0,7,12] },
+    { sentence: "Il est très intelligent.", highlight: "intelligent", type: "synonymes", corrects: ["malin","brillant","astucieux"], wrongs: ["bête","stupide"], rareBonus: [5,8,12] },
+    { sentence: "Cet exercice est facile.", highlight: "facile", type: "synonymes", corrects: ["simple","aisé","élémentaire"], wrongs: ["difficile","compliqué"], rareBonus: [0,6,10] },
+    { sentence: "Il a un air triste.", highlight: "triste", type: "synonymes", corrects: ["morose","désolé","affligé"], wrongs: ["joyeux","heureux"], rareBonus: [8,6,12] },
+    { sentence: "Cette histoire est étrange.", highlight: "étrange", type: "synonymes", corrects: ["bizarre","curieux","inexpliqué"], wrongs: ["normal","commun"], rareBonus: [6,8,15] },
+    // Antonymes
+    { sentence: "Il n'est jamais en retard.", highlight: "retard", type: "antonymes", corrects: ["avance","ponctualité"], wrongs: ["lenteur","absence"], rareBonus: [5,10] },
+    { sentence: "La pièce est sombre.", highlight: "sombre", type: "antonymes", corrects: ["clair","lumineux","éclatant"], wrongs: ["obscur","noir"], rareBonus: [4,8,12] },
+    { sentence: "Il a perdu ses clés.", highlight: "perdu", type: "antonymes", corrects: ["trouvé","retrouvé"], wrongs: ["égaré","caché"], rareBonus: [7,10] },
+    // Famille
+    { sentence: "Il aime la nature.", highlight: "nature", type: "famille", corrects: ["naturel","naturaliste","naturellement"], wrongs: ["artificiel","culture"], rareBonus: [5,12,10] },
+    { sentence: "Elle pratique la natation.", highlight: "natation", type: "famille", corrects: ["nager","nageur","nageoire"], wrongs: ["courir","sauter"], rareBonus: [4,7,12] },
+    // Champ lexical
+    { sentence: "La forêt est profonde.", highlight: "forêt", type: "champ lexical", corrects: ["arbre","feuille","branche","sous-bois"], wrongs: ["océan","désert"], rareBonus: [0,6,8,12] },
+    { sentence: "Le pirate cherche un trésor.", highlight: "pirate", type: "champ lexical", corrects: ["bateau","épée","carte","île"], wrongs: ["avion","voiture"], rareBonus: [5,7,9,10] },
+  ];
+  // Ajout de mots courants
+  const common = [
+    { sentence: "Il est très gentil.", highlight: "gentil", type: "synonymes", corrects: ["aimable","sympathique","bienveillant"], wrongs: ["méchant","désagréable"], rareBonus: [0,4,10] },
+    { sentence: "Elle a une belle maison.", highlight: "belle", type: "synonymes", corrects: ["magnifique","superbe","splendide"], wrongs: ["laide","moche"], rareBonus: [5,7,10] },
+    { sentence: "Il dit toujours la vérité.", highlight: "dit", type: "synonymes", corrects: ["déclare","affirme","exprime"], wrongs: ["ment","cache"], rareBonus: [6,8,12] },
+    { sentence: "Elle fait ses devoirs.", highlight: "fait", type: "synonymes", corrects: ["réalise","accomplit","effectue"], wrongs: ["défait","rate"], rareBonus: [5,7,10] },
+    { sentence: "Il a une voiture rapide.", highlight: "rapide", type: "synonymes", corrects: ["véloce","vif","prompt"], wrongs: ["lent","paresseux"], rareBonus: [5,7,9] },
+  ];
+  const FINAL_BANK = [...questionBank, ...common];
+  // Duplication pour atteindre ~50
+  while(FINAL_BANK.length < 50) FINAL_BANK.push({...FINAL_BANK[Math.floor(Math.random()*FINAL_BANK.length)]});
+
+  // --------------------------------------------------------------
+  // 4. JEU PRINCIPAL
   // --------------------------------------------------------------
   const LexicRushEvolved = {
     gameActive: false,
     currentRoundIndex: 0,
-    rounds: [], // liste des questions sélectionnées aléatoirement (10 manches)
+    rounds: [],
     roundData: null,
-    remainingCorrects: [], // mots corrects pas encore collectés
+    remainingCorrects: [], // objets {word, bonusPoints}
     score: 0,
     combo: 0,
     timeLeft: 25,
@@ -382,7 +519,6 @@
     },
 
     initGame() {
-      // Sélection aléatoire de 10 questions uniques (ou moins si pas assez, mais on a 55)
       const shuffled = [...FINAL_BANK];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -425,21 +561,18 @@
         return;
       }
       if (!this.gameActive) return;
-      // Nettoyer les bulles précédentes
       this.clearBubbles();
       if (this.spawnInterval) clearInterval(this.spawnInterval);
       if (this.timerInterval) clearInterval(this.timerInterval);
       if (this.gameLoop) cancelAnimationFrame(this.gameLoop);
 
       this.roundData = this.rounds[this.currentRoundIndex];
-      const { sentence, highlight, type, corrects, wrongs } = this.roundData;
-      // Adapter l'intitulé de la consigne
+      const { sentence, highlight, type, corrects, wrongs, rareBonus } = this.roundData;
       let instructionText = "";
       if (type === "synonymes") instructionText = `Trouvez ${corrects.length} synonyme(s) de « ${highlight} »`;
       else if (type === "antonymes") instructionText = `Trouvez ${corrects.length} antonyme(s) de « ${highlight} »`;
       else if (type === "famille") instructionText = `Trouvez ${corrects.length} mot(s) de la même famille que « ${highlight} »`;
       else if (type === "champ lexical") instructionText = `Trouvez ${corrects.length} mot(s) du champ lexical de « ${highlight} »`;
-      else instructionText = `Trouvez les mots liés à « ${highlight} »`;
 
       document.getElementById('sentence').innerText = sentence;
       document.getElementById('highlightWord').innerText = highlight;
@@ -447,13 +580,19 @@
       document.getElementById('roundNum').innerText = this.currentRoundIndex+1;
       document.getElementById('gameScore').innerText = this.score;
       document.getElementById('gameCombo').innerText = this.combo;
-      
-      this.remainingCorrects = [...corrects];
+
+      // Stocker les corrects avec leurs bonus
+      this.remainingCorrects = corrects.map((word, idx) => ({
+        word: word,
+        bonus: (rareBonus && rareBonus[idx]) ? rareBonus[idx] : 0
+      }));
       this.updateRemainingUI();
       this.timeLeft = 25;
       this.updateTimerUI();
 
-      // Lancer le timer
+      // Effet zoom sur le changement de consigne
+      this.showZoomText(instructionText);
+
       this.timerInterval = setInterval(() => {
         if (!this.gameActive) return;
         this.timeLeft -= 0.1;
@@ -463,13 +602,19 @@
         }
       }, 100);
 
-      // Lancer le spawn de bulles
       this.spawnInterval = setInterval(() => {
         if (this.gameActive) this.spawnBubble();
       }, 900);
 
-      // Animation
       this.animate();
+    },
+
+    showZoomText(text) {
+      const div = document.createElement('div');
+      div.className = 'zoom-transition';
+      div.innerText = text;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 800);
     },
 
     updateTimerUI() {
@@ -488,13 +633,14 @@
     spawnBubble() {
       if (!this.gameActive) return;
       const { corrects, wrongs } = this.roundData;
-      // 50% de chance de faire apparaître un mot correct restant, sinon un leurre
       let isCorrect = false;
       let word = "";
+      let bonusPoints = 0;
       if (this.remainingCorrects.length > 0 && Math.random() < 0.6) {
         isCorrect = true;
         const idx = Math.floor(Math.random() * this.remainingCorrects.length);
-        word = this.remainingCorrects[idx];
+        word = this.remainingCorrects[idx].word;
+        bonusPoints = this.remainingCorrects[idx].bonus;
       } else {
         isCorrect = false;
         const idx = Math.floor(Math.random() * wrongs.length);
@@ -510,6 +656,7 @@
       bubble.style.position = 'absolute';
       bubble.dataset.isCorrect = isCorrect ? "true" : "false";
       bubble.dataset.word = word;
+      bubble.dataset.bonus = bonusPoints;
       bubble.onclick = (e) => {
         e.stopPropagation();
         this.shootBubble(bubble);
@@ -519,49 +666,48 @@
         this.shootBubble(bubble);
       };
       this.canvasElem.appendChild(bubble);
-      this.bubbles.push({ element: bubble, y: 0, speed: 1.2 + Math.random() * 1.3, word, isCorrect });
+      this.bubbles.push({ element: bubble, y: 0, speed: 1.2 + Math.random() * 1.3, word, isCorrect, bonus: bonusPoints });
     },
 
     shootBubble(bubbleElem) {
       if (!this.gameActive) return;
       const isCorrect = bubbleElem.dataset.isCorrect === "true";
       const word = bubbleElem.dataset.word;
+      const bonus = parseInt(bubbleElem.dataset.bonus) || 0;
       if (isCorrect) {
-        // Vérifier que ce mot est bien dans remainingCorrects (sécurité)
-        const index = this.remainingCorrects.indexOf(word);
+        const index = this.remainingCorrects.findIndex(item => item.word === word);
         if (index !== -1) {
           this.remainingCorrects.splice(index, 1);
-          // Points et combo
-          let points = 10 + Math.floor(this.combo * 2);
-          this.score += points;
+          let basePoints = 10 + Math.floor(this.combo * 2);
+          let totalPoints = basePoints + bonus;
+          this.score += totalPoints;
           this.combo++;
-          this.addFeedback(bubbleElem, `+${points}`, '#8BC34A');
-          if (this.onReward) this.onReward(5, 2, false);
+          this.addFeedback(bubbleElem, `+${totalPoints}`, '#8BC34A');
+          playSound('success');
+          if (this.onReward) this.onReward(5 + Math.floor(bonus/2), 2, false);
           refreshHUD();
           this.updateUIStats();
           this.updateRemainingUI();
-          // Vérifier si la manche est terminée
           if (this.remainingCorrects.length === 0) {
             this.roundSuccess();
             return;
           }
         } else {
-          // déjà pris, on considère comme erreur ?
           this.combo = 0;
           this.addFeedback(bubbleElem, 'Déjà trouvé !', '#FFA500');
-          if (this.onReward) this.onReward(0, 0, true);
+          playSound('fail');
+          if (this.onReward) this.onReward(0,0,true);
           refreshHUD();
           this.updateUIStats();
         }
       } else {
-        // Mauvais mot
         this.combo = 0;
         this.addFeedback(bubbleElem, 'Mauvais !', '#E57373');
-        if (this.onReward) this.onReward(0, 0, true);
+        playSound('fail');
+        if (this.onReward) this.onReward(0,0,true);
         refreshHUD();
         this.updateUIStats();
       }
-      // Supprimer la bulle
       const idx = this.bubbles.findIndex(b => b.element === bubbleElem);
       if (idx !== -1) {
         this.bubbles[idx].element.remove();
@@ -571,11 +717,11 @@
 
     roundSuccess() {
       if (!this.gameActive) return;
-      // Bonus de fin de manche
       let bonus = 20;
       this.score += bonus;
       this.updateUIStats();
       this.addGlobalFeedback(`Manche réussie ! +${bonus} points`, '#FFD966');
+      playSound('roundwin');
       if (this.onReward) this.onReward(15, 5, false);
       refreshHUD();
       this.nextRound();
@@ -584,6 +730,7 @@
     roundFailure() {
       if (!this.gameActive) return;
       this.addGlobalFeedback("Temps écoulé ! Manche perdue...", '#E57373');
+      playSound('fail');
       if (this.onReward) this.onReward(0, 0, true);
       refreshHUD();
       this.nextRound();
@@ -595,13 +742,13 @@
       this.score = Math.max(0, this.score - 5);
       this.combo = 0;
       this.updateUIStats();
-      if (this.onReward) this.onReward(0, 0, true);
+      playSound('fail');
+      if (this.onReward) this.onReward(0,0,true);
       refreshHUD();
       this.nextRound();
     },
 
     nextRound() {
-      // Arrêter tout
       this.clearBubbles();
       if (this.spawnInterval) clearInterval(this.spawnInterval);
       if (this.timerInterval) clearInterval(this.timerInterval);
@@ -692,6 +839,7 @@
         bonusXP = 100;
         bonusCoins = 50;
         if (this.onReward) this.onReward(bonusXP, bonusCoins, false);
+        playSound('victory');
         refreshHUD();
       }
       this.container.innerHTML += `<div style="text-align:center; margin-top:1rem;"><p>${message}</p><p>Score final : ${this.score}</p><button id="playAgainEvolvedBtn">🔁 Rejouer</button></div>`;
@@ -704,7 +852,7 @@
   };
 
   // --------------------------------------------------------------
-  // 4. APPLICATION PRINCIPALE
+  // 5. APPLICATION PRINCIPALE
   // --------------------------------------------------------------
   const App = {
     init() {
@@ -714,6 +862,14 @@
       const style = document.createElement('style');
       style.textContent = `@keyframes fadeUp { 0% { opacity:1; transform: translateY(0); } 100% { opacity:0; transform: translateY(-40px); } }`;
       document.head.appendChild(style);
+      // Initialiser l'audio au premier clic utilisateur (règle navigateur)
+      document.body.addEventListener('click', () => {
+        if (!audioCtx) {
+          initAudio();
+          startBackgroundMusic();
+        }
+      }, { once: true });
+      document.getElementById('musicToggle').onclick = () => toggleMusic();
     },
     bindCard() {
       const card = document.querySelector('.game-card[data-game="lexicrush_evolved"]');

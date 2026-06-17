@@ -164,7 +164,7 @@
       border-radius:1.6rem;
     }
 
-    /* ── BULLES ── */
+    /* ── BULLES — toutes identiques, aucun indice visuel ── */
     .bubble {
       position:absolute;
       border-radius:3rem;
@@ -175,28 +175,14 @@
       white-space:nowrap;
       transition: transform 0.08s, box-shadow 0.08s;
       will-change: transform;
-      border:1.5px solid;
+      border:1.5px solid rgba(245,200,66,0.36);
       backdrop-filter: blur(6px);
-    }
-    .bubble-correct {
-      background: rgba(74,222,128,0.18);
-      border-color: rgba(74,222,128,0.55);
-      color: #A3F5BF;
-      box-shadow: 0 0 18px rgba(74,222,128,0.15);
-    }
-    .bubble-wrong {
       background: rgba(245,200,66,0.12);
-      border-color: rgba(245,200,66,0.35);
       color: var(--gold-pale);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
-    .bubble:hover { transform:scale(1.07); }
+    .bubble:hover { transform:scale(1.07); box-shadow: 0 0 14px rgba(245,200,66,0.22); }
     .bubble:active { transform:scale(0.93); }
-    /* les bulles correctes pulsent légèrement */
-    .bubble-correct { animation: bubblePulse 2.5s ease-in-out infinite; }
-    @keyframes bubblePulse {
-      0%,100% { box-shadow: 0 0 12px rgba(74,222,128,0.15); }
-      50%      { box-shadow: 0 0 24px rgba(74,222,128,0.30); }
-    }
 
     /* ── PIED DE ZONE ── */
     .game-footer {
@@ -667,7 +653,7 @@ const Game = {
     const left=20+Math.random()*(cw-140);
 
     const el=document.createElement('div');
-    el.className='bubble '+(isCorrect?'bubble-correct':'bubble-wrong');
+    el.className='bubble';
     el.textContent=word;
     el.style.left=`${left}px`;
     el.style.bottom='0px';

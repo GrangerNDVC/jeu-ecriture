@@ -4,34 +4,830 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Lexic Rush — Archives des Mots</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ... Ton CSS original conservé ... */
-    /* Ajout du style pour le nouveau look Space Invaders */
-    .saucer-style { fill: #F5C842; stroke: #C49A2E; }
-    .canvas-fullscreen { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; cursor: crosshair; }
+    :root {
+      --gold:      #F5C842;
+      --gold-pale: #FFE98A;
+      --gold-dim:  #C49A2E;
+      --violet:    #7B2FBE;
+      --violet-2:  #9D4EDD;
+      --ink:       #05080F;
+      --ink-2:     #0D1220;
+      --glass:     rgba(255,255,255,0.04);
+      --text:      #EDE3CC;
+      --text-dim:  rgba(237,227,204,0.55);
+      --green:     #4ADE80;
+      --red:       #F87171;
+      --orange:    #FB923C;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--ink);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* ── FOND ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 10%, rgba(123,47,190,0.2), transparent),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(245,200,66,0.08), transparent),
+        var(--ink);
+    }
+    .bg-star {
+      position: absolute; border-radius: 50%;
+      background: var(--gold-pale); animation: twinkle var(--d,4s) ease-in-out infinite alternate;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%   { opacity:0;    transform:scale(0.6); }
+      100% { opacity:0.4;  transform:scale(1.1); }
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 2;
+      max-width: 900px; margin: 0 auto;
+      padding: 0.8rem 1rem 2rem;
+      display: flex; flex-direction: column; gap: 0.8rem;
+      min-height: 100vh;
+    }
+
+    /* ── HUD COMPACT ── */
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.6rem;
+      background: var(--glass); border: 1px solid rgba(245,200,66,0.15);
+      border-radius: 1.2rem; padding: 0.6rem 1rem;
+      backdrop-filter: blur(16px);
+    }
+    .hud-left { display:flex; align-items:center; gap:0.6rem; }
+    .back-btn {
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(245,200,66,0.2);
+      color: var(--gold-pale); border-radius: 2rem;
+      padding: 0.25rem 0.8rem; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .back-btn:hover { background: rgba(245,200,66,0.12); border-color: var(--gold); }
+    .logo {
+      font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 900;
+      background: linear-gradient(120deg, var(--gold-pale), var(--gold));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hud-stats { display:flex; gap:0.4rem; flex-wrap:wrap; }
+    .stat {
+      display:flex; align-items:center; gap:0.3rem;
+      background: rgba(0,0,0,0.5); border:1px solid rgba(245,200,66,0.1);
+      border-radius:2rem; padding:0.2rem 0.65rem;
+      font-size:0.75rem; font-weight:700;
+    }
+    .stat-val { color: var(--gold); transition: color 0.3s; }
+    .stat-val.bump { color: var(--green); }
+
+    /* ── ZONE CONTEXTE ── */
+    .context-box {
+      background: rgba(0,0,0,0.45); border:1px solid rgba(245,200,66,0.15);
+      border-radius: 1.4rem; padding: 1rem 1.2rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .sentence {
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      font-style: italic; line-height: 1.5; color: var(--text);
+    }
+    .keyword-line { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .keyword-label { font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.08em; }
+    .keyword {
+      display:inline-block;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      color: var(--ink); border-radius:2rem; padding:0.2rem 0.9rem;
+      font-weight:800; font-size:0.9rem; letter-spacing:0.03em;
+    }
+    .instruction-tag {
+      display:inline-flex; align-items:center; gap:0.4rem;
+      background: rgba(123,47,190,0.3); border:1px solid rgba(157,78,221,0.45);
+      color: #D4A8FF; border-radius:2rem; padding:0.3rem 1rem;
+      font-size:0.82rem; font-weight:700; align-self:flex-start;
+    }
+
+    /* ── GAME STATS BAR ── */
+    .game-stats {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.5rem;
+    }
+    .gstat {
+      display:flex; align-items:center; gap:0.4rem;
+      font-size:0.82rem; font-weight:700;
+    }
+    .gstat-val { color: var(--gold); font-family:'Cinzel',serif; font-size:1rem; }
+
+    /* ── TIMER ── */
+    .timer-track {
+      height:6px; background:rgba(255,255,255,0.08);
+      border-radius:6px; overflow:hidden;
+    }
+    .timer-fill {
+      height:100%; width:100%;
+      background: linear-gradient(90deg, var(--green), var(--gold), var(--red));
+      border-radius:6px;
+      transition: width 0.1s linear;
+      transform-origin: left;
+    }
+
+    /* ── CANVAS DE JEU ── */
+    .canvas-wrap {
+      position:relative; flex:1; min-height: 320px;
+    }
+    .game-canvas {
+      position:absolute; inset:0;
+      background: rgba(0,0,0,0.35);
+      border-radius:1.6rem;
+      border:1px solid rgba(245,200,66,0.2);
+      overflow:hidden;
+      cursor:crosshair;
+    }
+    /* grille de fond decorative */
+    .game-canvas::before {
+      content:'';
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(245,200,66,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,200,66,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      border-radius:1.6rem;
+    }
+
+    /* ── BULLES — toutes identiques, aucun indice visuel ── */
+    .bubble {
+      position:absolute;
+      border-radius:3rem;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:0.88rem;
+      padding:0.45rem 1rem;
+      cursor:pointer;
+      white-space:nowrap;
+      transition: transform 0.08s, box-shadow 0.08s;
+      will-change: transform;
+      border:1.5px solid rgba(245,200,66,0.36);
+      backdrop-filter: blur(6px);
+      background: rgba(245,200,66,0.12);
+      color: var(--gold-pale);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .bubble:hover { transform:scale(1.07); box-shadow: 0 0 14px rgba(245,200,66,0.22); }
+    .bubble:active { transform:scale(0.93); }
+
+    /* ── PIED DE ZONE ── */
+    .game-footer {
+      display:flex; justify-content:space-between; align-items:center;
+      flex-wrap:wrap; gap:0.6rem;
+    }
+    .remaining {
+      font-size:0.8rem; color:var(--text-dim);
+    }
+    .remaining strong { color:var(--green); }
+    .btn-skip {
+      background: rgba(251,146,60,0.15); border:1px solid rgba(251,146,60,0.35);
+      color: var(--orange); border-radius:2rem;
+      padding:0.35rem 1rem; font-size:0.75rem; font-weight:700;
+      cursor:pointer; transition:background 0.2s;
+    }
+    .btn-skip:hover { background:rgba(251,146,60,0.28); }
+
+    /* ── MUSIQUE ── */
+    .music-btn {
+      position:fixed; bottom:1rem; right:1rem; z-index:100;
+      background:rgba(5,8,15,0.85); border:1px solid rgba(245,200,66,0.2);
+      color:var(--gold-pale); border-radius:2rem;
+      padding:0.4rem 0.9rem; font-size:0.72rem; font-weight:700;
+      cursor:pointer; backdrop-filter:blur(10px);
+    }
+
+    /* ── OVERLAYS & TRANSITIONS ── */
+    .zoom-msg {
+      position:fixed; top:50%; left:50%;
+      transform:translate(-50%,-50%) scale(0);
+      font-family:'Cinzel',serif;
+      font-size:clamp(1.2rem, 4vw, 2rem);
+      font-weight:900;
+      background: rgba(5,8,15,0.92);
+      border:1px solid var(--gold);
+      padding:0.9rem 2rem; border-radius:3rem;
+      color:var(--gold-pale);
+      white-space:nowrap; z-index:1000;
+      animation: zoomPop 0.75s cubic-bezier(.34,1.56,.64,1) forwards;
+      pointer-events:none; text-align:center;
+      box-shadow: 0 0 48px rgba(245,200,66,0.2);
+    }
+    @keyframes zoomPop {
+      0%   { transform:translate(-50%,-50%) scale(0);   opacity:0; }
+      40%  { transform:translate(-50%,-50%) scale(1.05); opacity:1; }
+      100% { transform:translate(-50%,-50%) scale(1);    opacity:0; }
+    }
+
+    .feedback-float {
+      position:fixed; pointer-events:none; z-index:1001;
+      font-weight:800; font-size:1.2rem;
+      text-shadow:0 0 8px rgba(0,0,0,0.9);
+      animation: floatUp 0.55s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0%   { opacity:1; transform:translateY(0)   scale(1);   }
+      100% { opacity:0; transform:translateY(-52px) scale(0.8); }
+    }
+
+    .global-msg {
+      position:fixed; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      background:rgba(5,8,15,0.92); border-radius:2rem;
+      padding:0.7rem 1.4rem; font-weight:800; font-size:1rem;
+      z-index:2000; border:1px solid rgba(255,255,255,0.1);
+      pointer-events:none; text-align:center;
+      animation: fadeInOut 1.6s ease forwards;
+    }
+    @keyframes fadeInOut {
+      0%   { opacity:0; transform:translate(-50%,-50%) scale(0.85); }
+      15%  { opacity:1; transform:translate(-50%,-50%) scale(1); }
+      75%  { opacity:1; }
+      100% { opacity:0; }
+    }
+
+    /* ── ÉCRAN FIN DE PARTIE ── */
+    .endgame {
+      text-align:center;
+      background:var(--glass); border:1px solid rgba(245,200,66,0.2);
+      border-radius:2rem; padding:2rem 1.5rem;
+      margin-top:1rem;
+    }
+    .endgame-title {
+      font-family:'Cinzel',serif; font-size:clamp(1.2rem,4vw,2rem);
+      color:var(--gold-pale); margin-bottom:0.5rem;
+    }
+    .endgame-score {
+      font-family:'Cinzel',serif; font-size:2.5rem; font-weight:900;
+      color:var(--gold); margin:0.5rem 0;
+    }
+    .endgame-sub { font-size:0.85rem; color:var(--text-dim); margin-bottom:1.5rem; }
+    .btn-primary {
+      background: linear-gradient(135deg,var(--violet-2),var(--violet));
+      border:none; color:#fff; border-radius:2rem;
+      padding:0.7rem 1.8rem; font-size:0.9rem; font-weight:700;
+      cursor:pointer; margin:0.3rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 8px 24px rgba(123,47,190,0.4);
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(123,47,190,0.5); }
+    .btn-secondary {
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);
+      color:var(--text); border-radius:2rem;
+      padding:0.7rem 1.8rem; font-size:0.9rem; font-weight:700;
+      cursor:pointer; margin:0.3rem;
+      transition:background 0.2s;
+    }
+    .btn-secondary:hover { background:rgba(255,255,255,0.1); }
+
+    /* ── ÉCRAN DÉBUT ── */
+    .start-screen {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; gap:1.2rem;
+      text-align:center; padding:2rem 1rem;
+      flex:1;
+    }
+    .start-icon { font-size:4rem; filter:drop-shadow(0 0 20px rgba(245,200,66,0.5)); }
+    .start-title {
+      font-family:'Cinzel',serif;
+      font-size:clamp(1.5rem,5vw,2.5rem); font-weight:900;
+      background:linear-gradient(160deg,#fff,var(--gold-pale),var(--gold));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .start-rules {
+      background:rgba(0,0,0,0.45); border:1px solid rgba(245,200,66,0.15);
+      border-radius:1.4rem; padding:1rem 1.4rem;
+      text-align:left; max-width:440px; width:100%;
+    }
+    .start-rules h3 {
+      font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
+      color:var(--text-dim); margin-bottom:0.7rem;
+    }
+    .rule {
+      display:flex; gap:0.7rem; align-items:flex-start;
+      font-size:0.82rem; line-height:1.5; margin-bottom:0.5rem; color:var(--text);
+    }
+    .rule-icon { font-size:1rem; flex-shrink:0; }
+    .btn-start {
+      background:linear-gradient(135deg,var(--gold),var(--gold-dim));
+      border:none; color:var(--ink); border-radius:2rem;
+      padding:0.9rem 2.5rem; font-size:1rem; font-weight:800;
+      cursor:pointer; font-family:'Cinzel',serif; letter-spacing:0.05em;
+      box-shadow:0 8px 32px rgba(245,200,66,0.35);
+      transition:transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-start:hover { transform:translateY(-3px); box-shadow:0 14px 40px rgba(245,200,66,0.5); }
+
+    /* ── PROGRESS DOTS ── */
+    .round-dots {
+      display:flex; gap:0.4rem; justify-content:center; flex-wrap:wrap;
+    }
+    .rdot {
+      width:10px; height:10px; border-radius:50%;
+      background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
+      transition:background 0.3s, transform 0.3s;
+    }
+    .rdot.done { background:var(--green); border-color:var(--green); transform:scale(1.15); }
+    .rdot.fail  { background:var(--red);   border-color:var(--red); }
+    .rdot.cur   { background:var(--gold);  border-color:var(--gold); transform:scale(1.25); }
+
+    @media (max-width:600px) {
+      .hud-stats .stat:nth-child(n+4) { display:none; }
+      .bubble { font-size:0.75rem; padding:0.35rem 0.75rem; }
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" class="canvas-fullscreen"></canvas>
-  
- <script src="js/storage.js"></script>
-  <script>
-    // ... Tes 800 lignes de logique JS originales conservées ...
-    
-    // MODIFICATION 1 : uniformisation des bulles
-    function drawSaucer(b) {
-      ctx.fillStyle = '#F5C842'; 
-      ctx.beginPath();
-      ctx.ellipse(b.x, b.y, b.radius, b.radius * 0.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // ... suite du rendu ...
+
+<div class="bg" id="bg"></div>
+
+<div class="page" id="page">
+
+  <!-- HUD -->
+  <header class="hud">
+    <div class="hud-left">
+      <a class="back-btn" href="index.html">← Hub</a>
+      <div class="logo">🔫 Lexic Rush</div>
+    </div>
+    <div class="hud-stats">
+      <div class="stat">⭐ Niv&nbsp;<span class="stat-val" id="level">1</span></div>
+      <div class="stat">✨ XP&nbsp;<span class="stat-val" id="xp">0</span></div>
+      <div class="stat">🔥 <span class="stat-val" id="combo">0</span></div>
+      <div class="stat">🪙 <span class="stat-val" id="coins">0</span></div>
+    </div>
+  </header>
+
+  <!-- ZONE DE JEU -->
+  <div id="mainArea"></div>
+
+</div>
+
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 ON</button>
+
+<script src="js/storage.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// FOND ÉTOILÉ
+// ══════════════════════════════════════════════
+(function(){
+  const bg = document.getElementById('bg');
+  for(let i=0;i<45;i++){
+    const s=document.createElement('div'); s.className='bg-star';
+    const sz=1+Math.random()*1.8;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;`;
+    bg.appendChild(s);
+  }
+})();
+
+// ══════════════════════════════════════════════
+// HUD
+// ══════════════════════════════════════════════
+function refreshHUD() {
+  document.getElementById('level').textContent = Storage.getLevel();
+  document.getElementById('xp').textContent    = Storage.getXP();
+  document.getElementById('combo').textContent = Storage.getCombo();
+  document.getElementById('coins').textContent = Storage.getCoins();
+}
+refreshHUD();
+
+// ══════════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════════
+let audioCtx=null, musicGain=null, musicInterval=null, musicOn=true;
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  musicGain=audioCtx.createGain(); musicGain.gain.value=0.15;
+  musicGain.connect(audioCtx.destination);
+}
+function playSound(type){
+  if(!audioCtx) return;
+  const now=audioCtx.currentTime;
+  function note(freq,vol,dur,delay=0){
+    setTimeout(()=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(vol,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+dur);
+    },delay);
+  }
+  if(type==='success')  { note(660,0.12,0.15); note(880,0.1,0.2,150); }
+  if(type==='fail')     { note(300,0.12,0.35); }
+  if(type==='roundwin') { note(523,0.12,0.15); note(659,0.12,0.15,150); note(784,0.15,0.4,300); }
+  if(type==='victory')  { [523,659,784,1047].forEach((f,i)=>note(f,0.15,0.4,i*180)); }
+}
+function startMusic(){
+  if(!musicOn||!audioCtx) return;
+  if(musicInterval) clearInterval(musicInterval);
+  const notes=[523,587,659,784,659,587,523,493,523,659,784,880,784,659];
+  let i=0;
+  musicInterval=setInterval(()=>{
+    if(!musicOn) return;
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=notes[i%notes.length];
+    g.gain.setValueAtTime(0.06,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.38);
+    o.connect(g); g.connect(musicGain); o.start(); o.stop(audioCtx.currentTime+0.35);
+    i++;
+  },480);
+}
+function toggleMusic(){
+  musicOn=!musicOn;
+  document.getElementById('musicBtn').textContent=musicOn?'🎵 ON':'🔇 OFF';
+  if(musicOn) startMusic(); else { clearInterval(musicInterval); musicInterval=null; }
+}
+document.body.addEventListener('click',()=>{ if(!audioCtx){initAudio();startMusic();} },{once:true});
+
+// ══════════════════════════════════════════════
+// BASE DE DONNÉES
+// ══════════════════════════════════════════════
+const QUESTIONS = [
+  { sentence:"Il court très rapidement.", highlight:"rapidement", type:"synonymes", corrects:["vite","vivement"], wrongs:["lentement","doucement"], rareBonus:[0,5] },
+  { sentence:"Elle est vraiment contente aujourd'hui.", highlight:"contente", type:"synonymes", corrects:["heureuse","satisfaite","ravie"], wrongs:["triste","fâchée"], rareBonus:[0,0,8] },
+  { sentence:"Ce garçon est très beau.", highlight:"beau", type:"synonymes", corrects:["magnifique","splendide","joli"], wrongs:["laid","moche"], rareBonus:[5,8,0] },
+  { sentence:"Il a un petit chien.", highlight:"petit", type:"synonymes", corrects:["minuscule","miniature","menu"], wrongs:["grand","énorme"], rareBonus:[5,6,10] },
+  { sentence:"Elle parle beaucoup en classe.", highlight:"parle", type:"synonymes", corrects:["discute","bavarde","converse"], wrongs:["se tait","murmure"], rareBonus:[0,6,10] },
+  { sentence:"C'est un garçon fort.", highlight:"fort", type:"synonymes", corrects:["puissant","solide","vigoureux"], wrongs:["faible","fragile"], rareBonus:[5,0,10] },
+  { sentence:"Il a fait une grosse erreur.", highlight:"grosse", type:"synonymes", corrects:["grande","énorme","importante"], wrongs:["petite","minuscule"], rareBonus:[0,8,4] },
+  { sentence:"Elle a une jolie voix.", highlight:"jolie", type:"synonymes", corrects:["belle","agréable","mélodieuse"], wrongs:["laide","désagréable"], rareBonus:[0,7,12] },
+  { sentence:"Il est très intelligent.", highlight:"intelligent", type:"synonymes", corrects:["malin","brillant","astucieux"], wrongs:["bête","stupide"], rareBonus:[5,8,12] },
+  { sentence:"Cet exercice est facile.", highlight:"facile", type:"synonymes", corrects:["simple","aisé","élémentaire"], wrongs:["difficile","compliqué"], rareBonus:[0,6,10] },
+  { sentence:"Il a un air triste.", highlight:"triste", type:"synonymes", corrects:["morose","désolé","affligé"], wrongs:["joyeux","heureux"], rareBonus:[8,6,12] },
+  { sentence:"Cette histoire est étrange.", highlight:"étrange", type:"synonymes", corrects:["bizarre","curieux","inexpliqué"], wrongs:["normal","commun"], rareBonus:[6,8,15] },
+  { sentence:"Il n'est jamais en retard.", highlight:"retard", type:"antonymes", corrects:["avance","ponctualité"], wrongs:["lenteur","absence"], rareBonus:[5,10] },
+  { sentence:"La pièce est sombre.", highlight:"sombre", type:"antonymes", corrects:["clair","lumineux","éclatant"], wrongs:["obscur","noir"], rareBonus:[4,8,12] },
+  { sentence:"Il a perdu ses clés.", highlight:"perdu", type:"antonymes", corrects:["trouvé","retrouvé"], wrongs:["égaré","caché"], rareBonus:[7,10] },
+  { sentence:"Il aime la nature.", highlight:"nature", type:"famille de mots", corrects:["naturel","naturaliste","naturellement"], wrongs:["artificiel","culture"], rareBonus:[5,12,10] },
+  { sentence:"Elle pratique la natation.", highlight:"natation", type:"famille de mots", corrects:["nager","nageur","nageoire"], wrongs:["courir","sauter"], rareBonus:[4,7,12] },
+  { sentence:"La forêt est profonde.", highlight:"forêt", type:"champ lexical", corrects:["arbre","feuille","branche","sous-bois"], wrongs:["océan","désert"], rareBonus:[0,6,8,12] },
+  { sentence:"Le pirate cherche un trésor.", highlight:"pirate", type:"champ lexical", corrects:["bateau","épée","carte","île"], wrongs:["avion","voiture"], rareBonus:[5,7,9,10] },
+  { sentence:"Il est très gentil.", highlight:"gentil", type:"synonymes", corrects:["aimable","sympathique","bienveillant"], wrongs:["méchant","désagréable"], rareBonus:[0,4,10] },
+  { sentence:"Elle a une belle maison.", highlight:"belle", type:"synonymes", corrects:["magnifique","superbe","splendide"], wrongs:["laide","moche"], rareBonus:[5,7,10] },
+  { sentence:"Il dit toujours la vérité.", highlight:"dit", type:"synonymes", corrects:["déclare","affirme","exprime"], wrongs:["ment","cache"], rareBonus:[6,8,12] },
+  { sentence:"Elle fait ses devoirs.", highlight:"fait", type:"synonymes", corrects:["réalise","accomplit","effectue"], wrongs:["défait","rate"], rareBonus:[5,7,10] },
+  { sentence:"Il a une voiture rapide.", highlight:"rapide", type:"synonymes", corrects:["véloce","vif","prompt"], wrongs:["lent","paresseux"], rareBonus:[5,7,9] },
+];
+const BANK = [...QUESTIONS];
+while(BANK.length < 50) BANK.push({...BANK[Math.floor(Math.random()*BANK.length)]});
+
+// ══════════════════════════════════════════════
+// UTILITAIRES UI
+// ══════════════════════════════════════════════
+function showZoom(text){
+  const d=document.createElement('div');
+  d.className='zoom-msg'; d.textContent=text;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),750);
+}
+function showFloat(x,y,text,color){
+  const d=document.createElement('div');
+  d.className='feedback-float'; d.textContent=text;
+  d.style.left=`${x}px`; d.style.top=`${y}px`;
+  d.style.color=color; document.body.appendChild(d);
+  setTimeout(()=>d.remove(),560);
+}
+function showGlobal(text,color){
+  const d=document.createElement('div');
+  d.className='global-msg'; d.style.color=color;
+  d.textContent=text; document.body.appendChild(d);
+  setTimeout(()=>d.remove(),1600);
+}
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// ══════════════════════════════════════════════
+// MOTEUR DE JEU
+// ══════════════════════════════════════════════
+const Game = {
+  active:false, rounds:[], roundIdx:0, roundData:null,
+  remaining:[], score:0, combo:0, timeLeft:25,
+  bubbles:[], canvas:null, loopId:null, spawnId:null, timerId:null,
+  roundResults:[], // 'win'|'fail' par manche
+
+  start(){
+    const s=shuffle(BANK);
+    this.rounds=s.slice(0,10);
+    this.roundIdx=0; this.score=0; this.combo=0;
+    this.roundResults=[]; this.active=true;
+    this.renderGameUI();
+    this.beginRound();
+  },
+
+  renderGameUI(){
+    const area=document.getElementById('mainArea');
+    area.innerHTML=`
+      <div class="context-box" id="ctxBox">
+        <div class="sentence" id="sentence"></div>
+        <div class="keyword-line">
+          <span class="keyword-label">Mot clé</span>
+          <span class="keyword" id="keyword"></span>
+        </div>
+        <div class="instruction-tag" id="instruction"></div>
+      </div>
+
+      <div class="game-stats">
+        <div class="gstat">🎯 Manche <span class="gstat-val" id="roundNum">1</span>/10</div>
+        <div class="gstat">💥 Score <span class="gstat-val" id="gameScore">0</span></div>
+        <div class="gstat">🔥 Combo <span class="gstat-val" id="gameCombo">0</span></div>
+        <div class="gstat">⏱ <span class="gstat-val" id="gameTimer">25</span>s</div>
+      </div>
+
+      <div class="round-dots" id="roundDots"></div>
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+
+      <div class="canvas-wrap" id="canvasWrap">
+        <div class="game-canvas" id="gameCanvas"></div>
+      </div>
+
+      <div class="game-footer">
+        <div class="remaining">✅ Réponses restantes : <strong id="remCount">0</strong></div>
+        <button class="btn-skip" id="skipBtn">⏩ Passer (−5 pts)</button>
+      </div>
+    `;
+    this.canvas=document.getElementById('gameCanvas');
+    document.getElementById('skipBtn').onclick=()=>this.skip();
+    this.updateDots();
+  },
+
+  updateDots(){
+    const el=document.getElementById('roundDots');
+    if(!el) return;
+    el.innerHTML='';
+    for(let i=0;i<10;i++){
+      const d=document.createElement('div');
+      d.className='rdot';
+      if(i<this.roundIdx){
+        d.classList.add(this.roundResults[i]==='win'?'done':'fail');
+      } else if(i===this.roundIdx){ d.classList.add('cur'); }
+      el.appendChild(d);
+    }
+  },
+
+  beginRound(){
+    if(this.roundIdx>=this.rounds.length){ this.endGame(true); return; }
+    if(!this.active) return;
+    this.clearBubbles();
+    clearInterval(this.spawnId); clearInterval(this.timerId);
+    cancelAnimationFrame(this.loopId);
+
+    this.roundData=this.rounds[this.roundIdx];
+    const {sentence,highlight,type,corrects,wrongs,rareBonus}=this.roundData;
+    const instrMap={
+      'synonymes':  `🔁 ${corrects.length} synonyme(s) de « ${highlight} »`,
+      'antonymes':  `↔️ ${corrects.length} antonyme(s) de « ${highlight} »`,
+      'famille de mots': `🌿 ${corrects.length} mot(s) de la famille de « ${highlight} »`,
+      'champ lexical':   `🗺️ ${corrects.length} mot(s) du champ de « ${highlight} »`,
+    };
+    const instr=instrMap[type]||`Trouvez les bons mots`;
+
+    document.getElementById('sentence').textContent=sentence;
+    document.getElementById('keyword').textContent=highlight;
+    document.getElementById('instruction').textContent=instr;
+    document.getElementById('roundNum').textContent=this.roundIdx+1;
+    this.updateScore();
+    this.updateDots();
+
+    this.remaining=corrects.map((w,i)=>({word:w,bonus:rareBonus?.[i]||0}));
+    document.getElementById('remCount').textContent=this.remaining.length;
+
+    this.timeLeft=25; this.updateTimer();
+    showZoom(instr);
+
+    this.timerId=setInterval(()=>{
+      if(!this.active) return;
+      this.timeLeft=Math.max(0,this.timeLeft-0.1);
+      this.updateTimer();
+      if(this.timeLeft<=0) this.fail();
+    },100);
+
+    this.spawnId=setInterval(()=>{ if(this.active) this.spawn(); },850);
+    this.animate();
+  },
+
+  updateTimer(){
+    const t=document.getElementById('gameTimer');
+    if(t) t.textContent=Math.ceil(this.timeLeft);
+    const f=document.getElementById('timerFill');
+    if(f) f.style.width=`${(this.timeLeft/25)*100}%`;
+  },
+
+  updateScore(){
+    const s=document.getElementById('gameScore');
+    const c=document.getElementById('gameCombo');
+    if(s) s.textContent=this.score;
+    if(c) c.textContent=this.combo;
+  },
+
+  spawn(){
+    if(!this.active||!this.canvas) return;
+    const {wrongs}=this.roundData;
+    let isCorrect=false, word='', bonus=0;
+
+    if(this.remaining.length>0 && Math.random()<0.58){
+      isCorrect=true;
+      const i=Math.floor(Math.random()*this.remaining.length);
+      word=this.remaining[i].word; bonus=this.remaining[i].bonus;
+    } else {
+      word=wrongs[Math.floor(Math.random()*wrongs.length)];
     }
 
-    // MODIFICATION 2 : explosion emojis
-    function triggerExplosion(x, y, isCorrect) {
-      const emoji = isCorrect ? '😈' : '😢';
-      // ... logique existante de particules avec l'emoji ...
+    const cw=this.canvas.clientWidth||300;
+    const left=20+Math.random()*(cw-140);
+
+    const el=document.createElement('div');
+    el.className='bubble';
+    el.textContent=word;
+    el.style.left=`${left}px`;
+    el.style.bottom='0px';
+    el.dataset.correct=isCorrect;
+    el.dataset.word=word;
+    el.dataset.bonus=bonus;
+
+    const shoot=(e)=>{ e.stopPropagation(); e.preventDefault(); this.shoot(el); };
+    el.addEventListener('click',shoot);
+    el.addEventListener('touchstart',shoot,{passive:false});
+
+    this.canvas.appendChild(el);
+    this.bubbles.push({el,y:0,speed:1.1+Math.random()*1.4});
+  },
+
+  shoot(el){
+    if(!this.active) return;
+    const isC=el.dataset.correct==='true';
+    const word=el.dataset.word;
+    const bonus=parseInt(el.dataset.bonus)||0;
+    const rect=el.getBoundingClientRect();
+    const fx=rect.left+rect.width/2, fy=rect.top+rect.height/2;
+
+    if(isC){
+      const idx=this.remaining.findIndex(r=>r.word===word);
+      if(idx!==-1){
+        this.remaining.splice(idx,1);
+        const pts=10+Math.floor(this.combo*2)+bonus;
+        this.score+=pts; this.combo++;
+        showFloat(fx,fy,`+${pts}${bonus?` ⭐`:''}`,bonus?'#FFE98A':'#4ADE80');
+        playSound('success');
+        Storage.addReward(5+Math.floor(bonus/2),2,1);
+        refreshHUD(); this.updateScore();
+        document.getElementById('remCount').textContent=this.remaining.length;
+        if(this.remaining.length===0){ this.win(); return; }
+      } else {
+        // déjà pris
+        this.combo=0; this.score=Math.max(0,this.score-5);
+        showFloat(fx,fy,'−5 déjà pris','#FB923C');
+        playSound('fail');
+        Storage.resetCombo(); refreshHUD(); this.updateScore();
+      }
+    } else {
+      this.combo=0; this.score=Math.max(0,this.score-5);
+      showFloat(fx,fy,'−5 ✗','#F87171');
+      playSound('fail');
+      Storage.resetCombo(); refreshHUD(); this.updateScore();
     }
-  </script>
+
+    // retire la bulle
+    const i=this.bubbles.findIndex(b=>b.el===el);
+    if(i!==-1){ this.bubbles[i].el.remove(); this.bubbles.splice(i,1); }
+  },
+
+  win(){
+    if(!this.active) return;
+    this.score+=20; this.updateScore();
+    showGlobal('✅ Manche réussie ! +20','#4ADE80');
+    playSound('roundwin');
+    Storage.addReward(15,5,1); refreshHUD();
+    this.roundResults.push('win');
+    this.next();
+  },
+
+  fail(){
+    if(!this.active) return;
+    showGlobal('⏱ Temps écoulé !','#F87171');
+    playSound('fail');
+    Storage.resetCombo(); refreshHUD();
+    this.roundResults.push('fail');
+    this.next();
+  },
+
+  skip(){
+    if(!this.active) return;
+    this.score=Math.max(0,this.score-5); this.combo=0;
+    this.updateScore();
+    showGlobal('⏩ Passé (−5 pts)','#FB923C');
+    playSound('fail');
+    Storage.resetCombo(); refreshHUD();
+    this.roundResults.push('fail');
+    this.next();
+  },
+
+  next(){
+    this.clearBubbles();
+    clearInterval(this.spawnId); clearInterval(this.timerId);
+    cancelAnimationFrame(this.loopId);
+    this.roundIdx++;
+    if(this.roundIdx<this.rounds.length) setTimeout(()=>this.beginRound(),1700);
+    else setTimeout(()=>this.endGame(true),1700);
+  },
+
+  animate(){
+    if(!this.active) return;
+    const h=this.canvas?this.canvas.clientHeight||400:400;
+    for(let i=this.bubbles.length-1;i>=0;i--){
+      const b=this.bubbles[i];
+      b.y+=b.speed;
+      b.el.style.bottom=`${b.y}px`;
+      if(b.y>h+80){ b.el.remove(); this.bubbles.splice(i,1); }
+    }
+    this.loopId=requestAnimationFrame(()=>this.animate());
+  },
+
+  clearBubbles(){
+    this.bubbles.forEach(b=>{if(b.el.parentNode)b.el.remove();});
+    this.bubbles=[];
+  },
+
+  endGame(victory){
+    this.active=false;
+    this.clearBubbles();
+    clearInterval(this.spawnId); clearInterval(this.timerId);
+    cancelAnimationFrame(this.loopId);
+
+    if(victory){ Storage.addReward(100,50,0); playSound('victory'); refreshHUD(); }
+
+    const wins=this.roundResults.filter(r=>r==='win').length;
+    const area=document.getElementById('mainArea');
+    area.innerHTML=`
+      <div class="endgame">
+        <div class="endgame-title">${victory?'🏆 Partie terminée !':'⛔ Partie interrompue'}</div>
+        <div class="endgame-score">${this.score} pts</div>
+        <div class="endgame-sub">
+          ${wins}/10 manches réussies · 
+          XP total : ${Storage.getXP()} · 
+          Niveau ${Storage.getLevel()}
+        </div>
+        <div style="margin:0.8rem 0;">
+          ${this.roundResults.map((r,i)=>`<span style="display:inline-block;margin:0.2rem;font-size:1.1rem;">${r==='win'?'✅':'❌'}</span>`).join('')}
+        </div>
+        <div>
+          <button class="btn-primary" id="replayBtn">🔁 Rejouer</button>
+          <button class="btn-secondary" id="hubBtn">← Retour au hub</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('replayBtn').onclick=()=>{ this.start(); };
+    document.getElementById('hubBtn').onclick=()=>{
+      document.body.style.transition='opacity 0.25s';
+      document.body.style.opacity='0';
+      setTimeout(()=>window.location.href='index.html',250);
+    };
+  }
+};
+
+// ══════════════════════════════════════════════
+// ÉCRAN D'ACCUEIL DU JEU
+// ══════════════════════════════════════════════
+function showStartScreen(){
+  document.getElementById('mainArea').innerHTML=`
+    <div class="start-screen">
+      <div class="start-icon">🔫</div>
+      <div class="start-title">Lexic Rush</div>
+      <div class="start-rules">
+        <h3>Comment jouer</h3>
+        <div class="rule"><span class="rule-icon">🟢</span><span>Clique sur les bulles <strong>correctes</strong> selon la consigne (synonyme, antonyme…)</span></div>
+        <div class="rule"><span class="rule-icon">🔴</span><span>Évite les mauvais mots : chaque erreur coûte <strong>−5 points</strong></span></div>
+        <div class="rule"><span class="rule-icon">⭐</span><span>Certains mots rares valent des <strong>points bonus</strong> supplémentaires</span></div>
+        <div class="rule"><span class="rule-icon">🔥</span><span>Enchaîne les bonnes réponses pour faire monter le <strong>combo</strong></span></div>
+        <div class="rule"><span class="rule-icon">⏱</span><span><strong>25 secondes</strong> par manche. 10 manches au total.</span></div>
+      </div>
+      <button class="btn-start" id="startBtn">⚡ Lancer la partie</button>
+    </div>
+  `;
+  document.getElementById('startBtn').onclick=()=>Game.start();
+}
+
+// INIT
+document.body.style.opacity='0';
+document.body.style.transition='opacity 0.35s';
+requestAnimationFrame(()=>{ document.body.style.opacity='1'; });
+showStartScreen();
+</script>
 </body>
 </html>
